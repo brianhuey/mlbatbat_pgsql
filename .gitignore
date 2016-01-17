@@ -1,0 +1,4 @@
+games/
+mlbstatcast/
+parsed_games/
+.pg_import
