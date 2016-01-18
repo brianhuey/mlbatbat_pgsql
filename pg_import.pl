@@ -21,7 +21,7 @@
 # Database connection statement
 use DBI;
 my $server_pw = $ENV{'DB_PW'}
-$dbh = DBI->connect("DBI:Pg:database=baseball;host=localhost", 'power_user', $server_pw )
+$dbh = DBI->connect("DBI:Pg:database=baseball_test;host=localhost", 'power_user', $server_pw )
 or die $DBI::errstr;
 
 # Set base directory for XML game data download URL

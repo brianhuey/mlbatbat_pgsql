@@ -55,15 +55,15 @@ sub getWithRetry($) {
 }
 
 # get all important files from MLB.com, 4/2/07 through yesterday
-# 0,0,0,day,month+1,1900+year
-$start = timelocal(0,0,0,22,2,114);
+# 0,0,0,day,month-1,1900+year
+$start = timelocal(0,0,0,7,5,115);
 ($mon, $mday, $year) = extractDate($start);
 print "starting at $mon/$mday/$year\n";
 
 ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
 #$now = timelocal(0,0,0,$mday - 0,$mon,$year);
 #$now = timelocal(0,0,0,$mday - 1,$mon,$year);
-$now = timelocal(0,0,0,29,9,114);
+$now = timelocal(0,0,0,8,5,115);
 ($mon, $mday, $year) = extractDate($now);
 print "ending at $mon/$mday/$year\n";
 
@@ -110,7 +110,7 @@ for ($t = $start; $t < $now; $t += 60*60*24) {
                 close BOX;
                 $box = $boxparser->XMLin("$gamedir/boxscore.xml");
                 $game_pk = $box->{boxscore}->[0]->{game_pk};
-                $scurl = "$scbaseurl/$game_pk/feed/color"
+                $scurl = "$scbaseurl/$game_pk/feed/color";
                 $scresponse = getWithRetry($scurl);
                 $schtml = $scresponse->content;
                 open SC, ">$gamedir/color.json"
