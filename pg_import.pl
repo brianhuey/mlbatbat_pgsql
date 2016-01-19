@@ -166,12 +166,28 @@ foreach $mondir (@monthdirs) {
                     if ($item->{id} = "playResult") {
                         $event_num = split(/playResult_/, $item->{guid});
                         $distance, $speed = description($item->{data}->{description});
+                        if ((not $distance) and (not $speed)) {
+                            # If no statcast data, don't submit
+                        } else if (not $distance) {
+                            $sc_query = 'INSERT INTO statcast (game_id, event_num, speed) '
+                            . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $speed . ')';
+                            $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
+                            $sth->execute();
+                            $sth->finish();
+                        } else if (not $speed) {
+                            $sc_query = 'INSERT INTO statcast (game_id, event_num, distance) '
+                            . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $distance . ')';
+                            $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
+                            $sth->execute();
+                            $sth->finish();
+                        } else {
                         $sc_query = 'INSERT INTO statcast (game_id, event_num, distance, speed) '
                             . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $distance . ', ' . $speed . ')';
                         $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
                         $sth->execute();
                         $sth->finish();
-                    } else { }
+                        }
+                    }
                 }
                 # Check if game info has been input before inputting umpire, at bat, and pitch info
                 $game_id_query = 'SELECT game_id FROM games WHERE (date = ' . $gamedate
