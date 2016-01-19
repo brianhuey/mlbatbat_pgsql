@@ -22,7 +22,7 @@
 use DBI;
 use LWP::Simple;
 use JSON qw( decode_json );
-my $server_pw = $ENV{'DB_PW'}
+my $server_pw = $ENV{'DB_PW'};
 $dbh = DBI->connect("DBI:Pg:database=baseball_test;host=localhost", 'power_user', $server_pw )
 or die $DBI::errstr;
 
@@ -160,18 +160,18 @@ foreach $mondir (@monthdirs) {
                 # STATCAST table
                 $sc_file = "$fulldir/color.json";
                 open(my $fh, '<', $sc_file) or die "Can't open $sc_file: $!";
-                while (my $line = <$fh>){ my $json = $line; };
-                my $sc_json = decode_json($json);
+                while (my $line = <$fh>){ $json = $line; };
+                $sc_json = decode_json($json);
                 foreach $item (@{$sc_json->{items}}) {
                     if ($item->{id} = "playResult") {
                         $event_num = split(/playResult_/, $item->{guid});
                         $distance, $speed = description($item->{data}->{description});
-                        $sc_query = 'INSERT INTO statcast (game_id, event_num, distance, speed '
+                        $sc_query = 'INSERT INTO statcast (game_id, event_num, distance, speed) '
                             . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $distance . ', ' . $speed . ')';
-                        $sth = $dbh->prepare(sc_query) or die $DBI::errstr;
+                        $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
                         $sth->execute();
                         $sth->finish();
-                    }
+                    } else { }
                 }
                 # Check if game info has been input before inputting umpire, at bat, and pitch info
                 $game_id_query = 'SELECT game_id FROM games WHERE (date = ' . $gamedate
