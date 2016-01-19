@@ -161,10 +161,13 @@ foreach $mondir (@monthdirs) {
                 $sc_file = "$fulldir/color.json";
                 open(my $fh, '<', $sc_file) or die "Can't open $sc_file: $!";
                 while (my $line = <$fh>){ $json = $line; };
-                $sc_json = decode_json($json);
+                my $sc_json = decode_json($json);
                 foreach $item (@{$sc_json->{items}}) {
                     if ($item->{id} = "playResult") {
-                        my $event_num = split(/playResult_/, $item->{guid});
+                        my $event_num = 0;
+			if ($item->{guid} =~ /playResult_(\d+)/) { 
+				$event_num = $1; 
+			}
                         my ($distance, $speed) = description($item->{data}->{description});
                         if ((not $distance) and (not $speed)) {
                             # If no statcast data, don't submit

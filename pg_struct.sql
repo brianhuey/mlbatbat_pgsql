@@ -162,5 +162,6 @@ CREATE TABLE IF NOT EXISTS statcast (
   event_num smallint NOT NULL,
   distance smallint DEFAULT NULL,
   speed smallint DEFAULT NULL,
+  PRIMARY KEY (game_id, event_num),
   FOREIGN KEY (game_id) REFERENCES games(game_id)
 );
