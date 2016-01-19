@@ -158,7 +158,7 @@ CREATE TABLE IF NOT EXISTS umpires (
 );
 
 CREATE TABLE IF NOT EXISTS statcast (
-  game_id char(26),
+  game_id char(26) NOT NULL,
   event_num smallint NOT NULL,
   distance smallint DEFAULT NULL,
   speed smallint DEFAULT NULL,
