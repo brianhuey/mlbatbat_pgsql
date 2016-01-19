@@ -164,8 +164,8 @@ foreach $mondir (@monthdirs) {
                 $sc_json = decode_json($json);
                 foreach $item (@{$sc_json->{items}}) {
                     if ($item->{id} = "playResult") {
-                        $event_num = split(/playResult_/, $item->{guid});
-                        $distance, $speed = description($item->{data}->{description});
+                        my $event_num = split(/playResult_/, $item->{guid});
+                        my ($distance, $speed) = description($item->{data}->{description});
                         if ((not $distance) and (not $speed)) {
                             # If no statcast data, don't submit
                         } elsif (not $distance) {
@@ -181,11 +181,11 @@ foreach $mondir (@monthdirs) {
                             $sth->execute();
                             $sth->finish();
                         } else {
-                        $sc_query = 'INSERT INTO statcast (game_id, event_num, distance, speed) '
-                            . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $distance . ', ' . $speed . ')';
-                        $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
-                        $sth->execute();
-                        $sth->finish();
+                            $sc_query = 'INSERT INTO statcast (game_id, event_num, distance, speed) '
+                                . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $distance . ', ' . $speed . ')';
+                            $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
+                            $sth->execute();
+                            $sth->finish();
                         }
                     }
                 }
