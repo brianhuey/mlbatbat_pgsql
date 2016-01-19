@@ -168,13 +168,13 @@ foreach $mondir (@monthdirs) {
                         $distance, $speed = description($item->{data}->{description});
                         if ((not $distance) and (not $speed)) {
                             # If no statcast data, don't submit
-                        } else if (not $distance) {
+                        } elsif (not $distance) {
                             $sc_query = 'INSERT INTO statcast (game_id, event_num, speed) '
                             . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $speed . ')';
                             $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
                             $sth->execute();
                             $sth->finish();
-                        } else if (not $speed) {
+                        } elsif (not $speed) {
                             $sc_query = 'INSERT INTO statcast (game_id, event_num, distance) '
                             . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $distance . ')';
                             $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
