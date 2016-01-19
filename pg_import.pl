@@ -22,9 +22,9 @@
 use DBI;
 use LWP::Simple;
 use JSON qw( decode_json );
-my $server_pw = $ENV{'DB_PW'}
+my $server_pw = $ENV{'DB_PW'};
 $dbh = DBI->connect("DBI:Pg:database=baseball_test;host=localhost", 'power_user', $server_pw )
-or die $DBI::errstr;
+    or die $DBI::errstr;
 
 # Set base directory for XML game data download URL
 $year = '2015';
@@ -160,8 +160,8 @@ foreach $mondir (@monthdirs) {
                 # STATCAST table
                 $sc_file = "$fulldir/color.json";
                 open(my $fh, '<', $sc_file) or die "Can't open $sc_file: $!";
-                while (my $line = <$fh>){ my $json = $line; };
-                my $sc_json = decode_json($json);
+                while (my $line = <$fh>){ $json = $line; };
+                $sc_json = decode_json($json);
                 foreach $item (@{$sc_json->{items}}) {
                     if ($item->{id} = "playResult") {
                         $event_num = split(/playResult_/, $item->{guid});
