@@ -156,3 +156,11 @@ CREATE TABLE IF NOT EXISTS umpires (
   first varchar(20) NOT NULL,
   last varchar(20) NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS statcast (
+  game_id char(26) PRIMARY KEY,
+  event_num smallint NOT NULL,
+  distance smallint DEFAULT NULL,
+  speed smallint DEFAULT NULL,
+  FOREIGN KEY (game_id) REFERENCES atbats(game_id)
+);

@@ -20,6 +20,8 @@
 
 # Database connection statement
 use DBI;
+use LWP::Simple;
+use JSON qw( decode_json );
 my $server_pw = $ENV{'DB_PW'}
 $dbh = DBI->connect("DBI:Pg:database=baseball_test;host=localhost", 'power_user', $server_pw )
 or die $DBI::errstr;
@@ -59,6 +61,19 @@ sub extract_info($) {
     return ($home, $away, $game_id, $gamedate, $gameinfo, $away_team_runs, $home_team_runs, $status_ind);
 }
 
+sub description($) {
+    my ($text) = @_;
+    my $distance = '';
+    my $speed = '';
+    if ($text =~ /(\d+) feet/) {
+        $distance = $1;
+    }
+    if ($text =~ /(\d+) mph/) {
+        $speed = $1;
+    }
+    return ($distance, $speed);
+}
+
 # Get the list of months from the base year directory
 opendir MDIR, $basedir;
 @monthdirs = readdir MDIR;
@@ -94,6 +109,7 @@ foreach $mondir (@monthdirs) {
                     }
                 $home = $dbh->quote($home);
                 $away = $dbh->quote($away);
+                # GAMES table
                 $game = $gameparser->XMLin("$fulldir/game.xml");
                 $game_time = $game->{game}->[0]->{local_game_time};
                 $game_time = $dbh->quote($game_time);
@@ -117,7 +133,7 @@ foreach $mondir (@monthdirs) {
                     $sth->execute();
                     $sth->finish();
                 }
-                # Check for new players in the players.xml file and input them into the database
+                # PLAYERS table
                 $players = $playerparser->XMLin("$fulldir/players.xml");
                 foreach $team (@{$players->{game}->[0]->{team}}) {
                     foreach $player (@{$team->{player}}) {
@@ -141,6 +157,22 @@ foreach $mondir (@monthdirs) {
                         }
                     }
                 }
+                # STATCAST table
+                $sc_file = "$fulldir/color.json";
+                open(my $fh, '<', $sc_file) or die "Can't open $sc_file: $!";
+                while (my $line = <$fh>){ my $json = $line; };
+                my $sc_json = decode_json($json);
+                foreach $item (@{$sc_json->{items}}) {
+                    if ($item->{id} = "playResult") {
+                        $event_num = split(/playResult_/, $item->{guid});
+                        $distance, $speed = description($item->{data}->{description});
+                        $sc_query = 'INSERT INTO statcast (game_id, event_num, distance, speed '
+                            . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $distance . ', ' . $speed . ')';
+                        $sth = $dbh->prepare(sc_query) or die $DBI::errstr;
+                        $sth->execute();
+                        $sth->finish();
+                    }
+                }
                 # Check if game info has been input before inputting umpire, at bat, and pitch info
                 $game_id_query = 'SELECT game_id FROM games WHERE (date = ' . $gamedate
                 . ' AND home = ' . $home . ' AND away = ' . $away . ' AND game = ' . $game_number . ')';
@@ -155,7 +187,7 @@ foreach $mondir (@monthdirs) {
                 }
                 $sth->finish();
 
-                # Find the home plate umpire and input him into the database
+                # UMPIRES table
                 foreach $umpire (@{$players->{game}->[0]->{umpires}->[0]->{umpire}}) {
                     $umpire_name = $umpire->{name};
                     ($umpire_first, $umpire_last) = split(/\s/, $umpire_name);
@@ -202,7 +234,7 @@ foreach $mondir (@monthdirs) {
                 $sth= $dbh->prepare($umpire_update_query) or die $DBI::errstr;
                 $sth->execute();
 
-                # Parse the at bats and pitches from each inning_?.xml file
+                # ATBATS & PITCH table: Parse the at bats and pitches from each inning_?.xml file
                 opendir IDIR, "$fulldir/inning";
                 my @inningfiles = readdir IDIR;
                 closedir IDIR;
