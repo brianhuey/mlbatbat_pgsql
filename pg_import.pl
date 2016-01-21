@@ -261,7 +261,7 @@ sub umpires_table($) {
     }
 }
 
-sub parse_po($) {
+sub parse_po {
     my ($atbat, $dbh, $select_game_id, $inning_num, $half) = @_;
     foreach $po (@{$atbat->{po}}) {
         $des = $dbh->quote($po->{des});
@@ -279,7 +279,7 @@ sub parse_po($) {
     }
 }
 
-sub parse_runner($) {
+sub parse_runner {
     my ($atbat, $dbh, $select_game_id, $inning_num, $half) = @_;
     foreach $runner (@{$atbat->{runner}}) {
         $runner_id = $runner->{id};
@@ -300,7 +300,7 @@ sub parse_runner($) {
     }
 }
 
-sub parse_action($) {
+sub parse_action {
     my ($action, $dbh, $select_game_id, $inning_num, $half) = @_;
     $event_num = $action->{event_num};
     $des = $dbh->quote($action->{des});
@@ -322,7 +322,7 @@ sub parse_action($) {
     $sth->finish();
 }
 
-sub parse_at_bats_and_pitches($) {
+sub parse_at_bats_and_pitches {
     my ($atbat, $dbh, $select_game_id, $inning_num, $half) = @_;
     $event = $dbh->quote($atbat->{event});
     $num = $atbat->{num};
@@ -426,7 +426,7 @@ sub parse_at_bats_and_pitches($) {
     }
 }
 
-sub atbats_pitches_table($) {
+sub atbats_pitches_table {
     ($fulldir, $dbh, $select_game_id) = @_;
     opendir IDIR, "$fulldir/inning";
     my @inningfiles = readdir IDIR;
@@ -436,8 +436,7 @@ sub atbats_pitches_table($) {
         if ($inningfn =~ /inning_(\d+)\.xml/) {
             $inning_num = $1;
             # Pre-process the inning_?.xml file
-            $inning = $inningparser->XMLin(
-                "$fulldir/inning/$inningfn");
+            $inning = $inningparser->XMLin("$fulldir/inning/$inningfn");
             @innings[$inning_num] = $inning;
             # Parse the at-bat and pitch data for the top and bottom halves of each inning
             foreach $atbat (@{$inning->{inning}->[0]->{top}->[0]->{atbat}}) {
