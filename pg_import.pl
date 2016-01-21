@@ -560,7 +560,7 @@ sub process_directory {
                         players_table($fulldir, $dbh);
                         statcast_table($fulldir, $dbh);
                         check_gameid($fulldir, $dbh, $home, $away, $game_id, $game_date, $game_number);
-                        umpire_table($fulldir, $dbh);
+                        umpires_table($fulldir, $dbh);
                         atbats_pitches_table($fulldir, $dbh, $game_id);
                         hitrecord($fulldir, $dbh);
                     }
