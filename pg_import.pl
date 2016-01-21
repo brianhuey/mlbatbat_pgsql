@@ -421,8 +421,6 @@ sub parse_at_bats_and_pitches($atbat, $dbh, $select_game_id, $inning_num, $half)
     }
 }
 
-<<<<<<< HEAD
-=======
 sub atbats_pitches_table($) {
     my ($fulldir) = @_;
     opendir IDIR, "$fulldir/inning";
