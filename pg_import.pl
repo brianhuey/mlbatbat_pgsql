@@ -32,11 +32,11 @@ $basedir = "./games/year_$year";
 
 # Define XML objects
 use XML::Simple;
-$boxparser= new XML::Simple(ForceArray => 1, KeepRoot => 1, KeyAttr => 'boxscore');
-$inningparser= new XML::Simple(ForceArray => 1, KeepRoot => 1, KeyAttr => 'inning');
-$hitsparser= new XML::Simple(ForceArray => 1, KeepRoot => 1, KeyAttr => 'hitchart');
-$playerparser= new XML::Simple(ForceArray => 1, KeepRoot => 1, KeyAttr => 'game');
-$gameparser= new XML::Simple(ForceArray => 1, KeepRoot => 1, KeyAttr => 'game');
+
+
+
+
+
 
 sub extract_date($) {
     my($in) = @_;
@@ -76,6 +76,7 @@ sub description($) {
 
 sub games_table {
     my ($fulldir, $dbh) = @_;
+    my $boxparser= new XML::Simple(ForceArray => 1, KeepRoot => 1, KeyAttr => 'boxscore');
     my $box = $boxparser->XMLin("$fulldir/boxscore.xml");
     my ($home, $away, $game_id, $game_date, $gameinfo, $away_team_runs, $home_team_runs, $status_ind) = extract_info($box);
     # Game number = 1, unless the 2nd game of a doubleheader when game number = 2
@@ -91,24 +92,25 @@ sub games_table {
         $wind = 0;
         $wind_dir = "'Indoors'";
     }
-    $home = $dbh->quote($home);
-    $away = $dbh->quote($away);
-    $game = $gameparser->XMLin("$fulldir/game.xml");
-    $game_time = $game->{game}->[0]->{local_game_time};
+    my $home = $dbh->quote($home);
+    my $away = $dbh->quote($away);
+    my $gameparser= new XML::Simple(ForceArray => 1, KeepRoot => 1, KeyAttr => 'game');
+    my $game = $gameparser->XMLin("$fulldir/game.xml");
+    my $game_time = $game->{game}->[0]->{local_game_time};
     $game_time = $dbh->quote($game_time);
-    $status_ind = $dbh->quote($status_ind);
+    my $status_ind = $dbh->quote($status_ind);
     # Input the game info into the database
-    $no_duplicate_query = 'SELECT game_id FROM games WHERE (date = ' . $game_date
+    my $no_duplicate_query = 'SELECT game_id FROM games WHERE (date = ' . $game_date
     . ' AND home = ' . $home . ' AND away = ' . $away . ' AND game = ' . $game_number
     . ' AND game_id = ' . $game_id . ')';
-    $sth= $dbh->prepare($no_duplicate_query) or die $DBI::errstr;
+    my $sth= $dbh->prepare($no_duplicate_query) or die $DBI::errstr;
     $sth->execute();
     my $numRows = $sth->rows;
     $sth->finish();
     if ($numRows) {
         # don't insert duplicate game entry into games table
     } else {
-        $game_query = 'INSERT INTO games (date, home, away, game, wind, wind_dir, temp,
+        my $game_query = 'INSERT INTO games (date, home, away, game, wind, wind_dir, temp,
         runs_home, runs_away, local_time, game_id, completion) VALUES (' . $game_date . ', '. $home . ', ' . $away
         . ', ' . $game_number . ', ' . $wind . ', ' . $wind_dir . ', ' . $temperature . ', '
         . $home_team_runs . ', ' . $away_team_runs . ', ' . $game_time . ',' . $game_id . ',' . $status_ind . ')';
@@ -121,6 +123,7 @@ sub games_table {
 
 sub players_table {
     my ($fulldir, $dbh) = @_;
+    my $playerparser= new XML::Simple(ForceArray => 1, KeepRoot => 1, KeyAttr => 'game');
     my $players = $playerparser->XMLin("$fulldir/players.xml");
     foreach $team (@{$players->{game}->[0]->{team}}) {
         foreach $player (@{$team->{player}}) {
@@ -203,6 +206,7 @@ sub check_gameid {
 
 sub umpires_table {
     my ($fulldir, $dbh) = @_;
+    my $playerparser= new XML::Simple(ForceArray => 1, KeepRoot => 1, KeyAttr => 'game');
     my $players = $playerparser->XMLin("$fulldir/players.xml");
     foreach $umpire (@{$players->{game}->[0]->{umpires}->[0]->{umpire}}) {
         $umpire_name = $umpire->{name};
@@ -427,6 +431,7 @@ sub atbats_pitches_table {
     my @inningfiles = readdir IDIR;
     closedir IDIR;
     my @innings = ();
+    $inningparser= new XML::Simple(ForceArray => 1, KeepRoot => 1, KeyAttr => 'inning');
     foreach $inningfn (@inningfiles) {
         if ($inningfn =~ /inning_(\d+)\.xml/) {
             $inning_num = $1;
@@ -470,6 +475,7 @@ sub update_hit_info {
 
 sub hitrecord {
     my ($fulldir, $dbh, $game_id) = @_;
+    $hitsparser= new XML::Simple(ForceArray => 1, KeepRoot => 1, KeyAttr => 'hitchart');
     $hits = $hitsparser->XMLin("$fulldir/inning/inning_hit.xml");
     # When a ball in play and an error are recorded on the same play,
     # the error may be the first play listed in inning_hit.xml or the second play.
