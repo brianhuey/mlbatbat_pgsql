@@ -122,7 +122,8 @@ sub games_table($) {
     }
 }
 
-sub players_table($fulldir) {
+sub players_table($) {
+    my ($fulldir) = @_;
     if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
         my $players = $playerparser->XMLin("$fulldir/players.xml");
         foreach $team (@{$players->{game}->[0]->{team}}) {
@@ -150,7 +151,8 @@ sub players_table($fulldir) {
     }
 }
 
-sub statcast_table($fulldir) {
+sub statcast_table($) {
+    my ($fulldir) = @_;
     if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
         my $sc_file = "$fulldir/color.json";
         open(my $fh, '<', $sc_file) or die "Can't open $sc_file: $!";
@@ -205,7 +207,8 @@ sub check_gameid($fulldir, $home, $away, $game_id, $game_number) {
     $sth->finish();
 }
 
-sub umpires_table($fulldir) {
+sub umpires_table($) {
+    my ($fulldir) = @_;
     if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
         my $players = $playerparser->XMLin("$fulldir/players.xml");
         foreach $umpire (@{$players->{game}->[0]->{umpires}->[0]->{umpire}}) {
@@ -257,7 +260,8 @@ sub umpires_table($fulldir) {
     }
 }
 
-sub atbats_pitches_table($fulldir) {
+sub atbats_pitches_table($) {
+    my ($fulldir) = @_;
     opendir IDIR, "$fulldir/inning";
     my @inningfiles = readdir IDIR;
     closedir IDIR;
