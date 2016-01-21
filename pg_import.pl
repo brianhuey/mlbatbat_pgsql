@@ -487,6 +487,7 @@ sub hitrecord {
         $hit_batter = $hip->{batter};
         $hit_pitcher = $hip->{pitcher};
         $hit_inning = $hip->{inning};
+        $game_id = $dbh->quote($game_id);
         # find the at bat that matches the ball in play
         $find_ab_id_query = 'SELECT ab_id, hit_x, event FROM atbats WHERE (game_id = ' . $game_id
         . ' AND inning = ' . $hit_inning . ' AND batter = ' . $hit_batter . ' AND pitcher = '
