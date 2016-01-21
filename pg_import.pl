@@ -427,7 +427,7 @@ sub parse_at_bats_and_pitches($) {
 }
 
 sub atbats_pitches_table($) {
-    my ($fulldir, $dbh, $select_game_id) = @_;
+    ($fulldir, $dbh, $select_game_id) = @_;
     opendir IDIR, "$fulldir/inning";
     my @inningfiles = readdir IDIR;
     closedir IDIR;
@@ -441,23 +441,23 @@ sub atbats_pitches_table($) {
             @innings[$inning_num] = $inning;
             # Parse the at-bat and pitch data for the top and bottom halves of each inning
             foreach $atbat (@{$inning->{inning}->[0]->{top}->[0]->{atbat}}) {
-                $half = 1;
+                my $half = 1;
                 parse_at_bats_and_pitches($atbat, $dbh, $select_game_id, $inning_num, $half);
                 parse_runner($atbat, $dbh, $select_game_id, $inning_num, $half);
                 parse_po($atbat, $dbh, $select_game_id, $inning_num, $half);
             }
             foreach $action (@{$inning->{inning}->[0]->{top}->[0]->{action}}) {
-                $half = 1;
+                my $half = 1;
                 parse_action($action, $dbh, $select_game_id, $inning_num, $half);
             }
             foreach $atbat (@{$inning->{inning}->[0]->{bottom}->[0]->{atbat}}) {
-                $half = 2;
+                my $half = 2;
                 parse_at_bats_and_pitches($atbat, $dbh, $select_game_id, $inning_num, $half);
                 parse_runner($atbat, $dbh, $select_game_id, $inning_num, $half);
                 parse_po($atbat, $dbh, $select_game_id, $inning_num, $half);
             }
             foreach $action (@{$inning->{inning}->[0]->{bottom}->[0]->{action}}) {
-                $half = 2;
+                my $half = 2;
                 parse_action($action, $dbh, $select_game_id, $inning_num, $half);
             }
         }
