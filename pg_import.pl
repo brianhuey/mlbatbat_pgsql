@@ -555,8 +555,8 @@ sub process_directory {
                     my @gamedirs = readdir GDIR;
                     closedir GDIR;
                     foreach $gamedir (@gamedirs) {
-                        my $fulldir = "$basedir/$mondir/$daydir/$gamedir";
                         if ($gamedir =~ /gid_/ and (-e "$basedir/$mondir/$daydir/$gamedir/inning/inning_hit.xml")) {
+                            my $fulldir = "$basedir/$mondir/$daydir/$gamedir";
                             ($home, $away, $game_id, $game_date, $game_number) = games_table($fulldir, $dbh);
                             players_table($fulldir, $dbh);
                             statcast_table($fulldir, $dbh, $game_id);
