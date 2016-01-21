@@ -118,7 +118,7 @@ sub games_table {
             $sth->execute();
             $sth->finish();
         }
-        return ($home, $away, $game_id, $game_number);
+        return ($home, $away, $game_id, $game_date, $game_number);
     }
 }
 
@@ -192,7 +192,7 @@ sub statcast_table {
 }
 
 sub check_gameid {
-    my ($full_dir, $dbh, $home, $away, $game_id, $game_number) = @_;
+    my ($full_dir, $dbh, $home, $away, $game_id, $game_date, $game_number) = @_;
     # Check if game info has been input before inputting umpire, at bat, and pitch info
     $game_id_query = 'SELECT game_id FROM games WHERE (date = ' . $gamedate
     . ' AND home = ' . $home . ' AND away = ' . $away . ' AND game = ' . $game_number . ')';
@@ -555,11 +555,11 @@ sub process_directory {
                     closedir GDIR;
                     foreach $fulldir (@gamedirs) {
                         $fulldir = "$basedir/$mondir/$daydir/$fulldir";
-                        ($home, $away, $game_id, $game_number) = games_table($fulldir, $dbh);
+                        ($home, $away, $game_id, $game_date, $game_number) = games_table($fulldir, $dbh);
                         # PLAYERS table
                         players_table($fulldir, $dbh);
                         statcast_table($fulldir, $dbh);
-                        check_gameid($fulldir, $dbh, $home, $away, $game_id, $game_number);
+                        check_gameid($fulldir, $dbh, $home, $away, $game_id, $game_date, $game_number);
                         umpire_table($fulldir, $dbh);
                         atbats_pitches_table($fulldir, $dbh, $game_id);
                         hitrecord($fulldir, $dbh);
