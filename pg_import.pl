@@ -78,7 +78,7 @@ sub games_table {
     my ($fulldir, $dbh) = @_;
     if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
         my $box = $boxparser->XMLin("$fulldir/boxscore.xml");
-        my ($home, $away, $game_id, $gamedate, $gameinfo, $away_team_runs, $home_team_runs, $status_ind) = extract_info($box);
+        my ($home, $away, $game_id, $game_date, $gameinfo, $away_team_runs, $home_team_runs, $status_ind) = extract_info($box);
         # Game number = 1, unless the 2nd game of a doubleheader when game number = 2
         $game_number = substr($game_id, -2, 1);
         if ($gameinfo =~ /<br\/><b>Weather<\/b>: (\d+) degrees,.*<br\/><b>Wind<\/b>: (\d+) mph, ([\w\s]+).<br\/>/) {
