@@ -37,7 +37,7 @@ $inningparser= new XML::Simple(ForceArray => 1, KeepRoot => 1, KeyAttr => 'innin
 $hitsparser= new XML::Simple(ForceArray => 1, KeepRoot => 1, KeyAttr => 'hitchart');
 $playerparser= new XML::Simple(ForceArray => 1, KeepRoot => 1, KeyAttr => 'game');
 $gameparser= new XML::Simple(ForceArray => 1, KeepRoot => 1, KeyAttr => 'game');
-
+process_directory($basedir);
 sub extract_date($) {
     my($in) = @_;
     my $gmyr = substr($in,0,4);
@@ -575,4 +575,3 @@ sub parse_at_bats_and_pitches($atbat, $dbh, $select_game_id, $inning_num, $half)
     }
 }
 
-process_directory($basedir);
