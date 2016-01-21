@@ -282,6 +282,49 @@ sub atbats_pitches_table($) {
     }
 }
 
+sub process_directory($basedir) {
+    # Get the list of months from the base year directory
+    opendir MDIR, $basedir;
+    @monthdirs = readdir MDIR;
+    closedir MDIR;
+
+    foreach $mondir (@monthdirs) {
+        if ($mondir =~ /month/) {
+            opendir DDIR, "$basedir/$mondir";
+            my @daydirs = readdir DDIR;
+            closedir DDIR;
+            foreach $daydir (@daydirs) {
+                if ($daydir =~ /day/) {
+                    opendir GDIR, "$basedir/$mondir/$daydir";
+                    my @gamedirs = readdir GDIR;
+                    closedir GDIR;
+                    foreach $fulldir (@gamedirs) {
+                        $fulldir = "$basedir/$mondir/$daydir/$fulldir";
+                        ($home, $away, $game_id, $gamedate) = games_table($fulldir);
+                        # PLAYERS table
+                        players_table($fulldir);
+                        statcast_table($fulldir);
+                        check_gameid($fulldir, $home, $away, $game_id, $gamedate);
+                        umpire_table($fulldir);
+                        atbats_pitches_table($fulldir);
+                        hitrecord($fulldir);
+                    }
+                }
+            }
+        }
+    }
+}
+
+# This is a debug section if you want to look at contents of the XML file
+# in an easier-to-read format
+#           use Data::Dumper;
+#           open (OUTFILE, "> debug_parser_innings.txt") || die "sorry, system can't open outfile";
+#           print OUTFILE Dumper($hits);
+#           print OUTFILE Dumper($players);
+#           print OUTFILE Dumper($names);
+#           print OUTFILE Dumper($box);
+#           print OUTFILE Dumper(@innings);
+#           close OUTFILE;
 sub hitrecord($fulldir, $game_id) {
     $hits = $hitsparser->XMLin("$fulldir/inning/inning_hit.xml");
     # When a ball in play and an error are recorded on the same play,
@@ -344,50 +387,6 @@ sub hitrecord($fulldir, $game_id) {
     }
     close HITRECORD;
 }
-
-sub process_directory($basedir) {
-    # Get the list of months from the base year directory
-    opendir MDIR, $basedir;
-    @monthdirs = readdir MDIR;
-    closedir MDIR;
-
-    foreach $mondir (@monthdirs) {
-        if ($mondir =~ /month/) {
-            opendir DDIR, "$basedir/$mondir";
-            my @daydirs = readdir DDIR;
-            closedir DDIR;
-            foreach $daydir (@daydirs) {
-                if ($daydir =~ /day/) {
-                    opendir GDIR, "$basedir/$mondir/$daydir";
-                    my @gamedirs = readdir GDIR;
-                    closedir GDIR;
-                    foreach $fulldir (@gamedirs) {
-                        $fulldir = "$basedir/$mondir/$daydir/$fulldir";
-                        ($home, $away, $game_id, $gamedate) = games_table($fulldir);
-                        # PLAYERS table
-                        players_table($fulldir);
-                        statcast_table($fulldir);
-                        check_gameid($fulldir, $home, $away, $game_id, $gamedate);
-                        umpire_table($fulldir);
-                        atbats_pitches_table($fulldir);
-                        hitrecord($fulldir);
-                    }
-                }
-            }
-        }
-    }
-}
-
-# This is a debug section if you want to look at contents of the XML file
-# in an easier-to-read format
-#           use Data::Dumper;
-#           open (OUTFILE, "> debug_parser_innings.txt") || die "sorry, system can't open outfile";
-#           print OUTFILE Dumper($hits);
-#           print OUTFILE Dumper($players);
-#           print OUTFILE Dumper($names);
-#           print OUTFILE Dumper($box);
-#           print OUTFILE Dumper(@innings);
-#           close OUTFILE;
 
 sub check_gameid($home, $away, $game_id, $game_number) {
     # Check if game info has been input before inputting umpire, at bat, and pitch info
