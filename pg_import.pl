@@ -74,7 +74,7 @@ sub description($) {
     return ($distance, $speed);
 }
 
-sub games_table($) {
+sub games_table {
     my ($fulldir, $dbh) = @_;
     if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
         my $box = $boxparser->XMLin("$fulldir/boxscore.xml");
@@ -122,7 +122,7 @@ sub games_table($) {
     }
 }
 
-sub players_table($) {
+sub players_table {
     my ($fulldir, $dbh) = @_;
     if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
         my $players = $playerparser->XMLin("$fulldir/players.xml");
@@ -151,7 +151,7 @@ sub players_table($) {
     }
 }
 
-sub statcast_table($) {
+sub statcast_table {
     my ($fulldir, $dbh) = @_;
     if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
         my $sc_file = "$fulldir/color.json";
@@ -191,7 +191,7 @@ sub statcast_table($) {
     }
 }
 
-sub check_gameid($) {
+sub check_gameid {
     my ($full_dir, $dbh, $home, $away, $game_id, $game_number) = @_;
     # Check if game info has been input before inputting umpire, at bat, and pitch info
     $game_id_query = 'SELECT game_id FROM games WHERE (date = ' . $gamedate
@@ -208,7 +208,7 @@ sub check_gameid($) {
     $sth->finish();
 }
 
-sub umpires_table($) {
+sub umpires_table {
     my ($fulldir, $dbh) = @_;
     if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
         my $players = $playerparser->XMLin("$fulldir/players.xml");
@@ -463,7 +463,7 @@ sub atbats_pitches_table {
     }
 }
 
-sub update_hit_info($) {
+sub update_hit_info {
     my ($dbh, $hit_x, $hit_y, $hit_type, $select_ab_id) = @_;
     # update at bat record with hit info
     $hit_query = 'UPDATE atbats SET hit_x = ' . $hit_x . ', hit_y = ' . $hit_y
@@ -473,7 +473,7 @@ sub update_hit_info($) {
     $sth->finish();
 }
 
-sub hitrecord($) {
+sub hitrecord {
     my ($fulldir, $dbh, $game_id) = @_;
     $hits = $hitsparser->XMLin("$fulldir/inning/inning_hit.xml");
     # When a ball in play and an error are recorded on the same play,
@@ -536,7 +536,7 @@ sub hitrecord($) {
     }
     close HITRECORD;
 }
-sub process_directory($) {
+sub process_directory {
     ($basedir, $dbh) = @_;
     # Get the list of months from the base year directory
     opendir MDIR, $basedir;
