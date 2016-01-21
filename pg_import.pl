@@ -556,8 +556,8 @@ sub process_directory {
                     opendir GDIR, "$basedir/$mondir/$daydir";
                     my @gamedirs = readdir GDIR;
                     closedir GDIR;
-                    foreach $fulldir (@gamedirs) {
-                        my $fulldir = "$basedir/$mondir/$daydir/$fulldir";
+                    foreach $gamedir (@gamedirs) {
+                        my $fulldir = "$basedir/$mondir/$daydir/$gamedir";
                         my ($home, $away, $game_id, $game_date, $game_number) = games_table($fulldir, $dbh);
                         # PLAYERS table
                         players_table($fulldir, $dbh);
