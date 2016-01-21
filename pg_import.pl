@@ -74,7 +74,8 @@ sub description($) {
     return ($distance, $speed);
 }
 
-sub games_table($fulldir) {
+sub games_table($) {
+    my ($fulldir) = @_;
     if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
         my $box = $boxparser->XMLin("$fulldir/boxscore.xml");
         my ($home, $away, $game_id, $gamedate, $gameinfo, $away_team_runs, $home_team_runs, $status_ind) = extract_info($box);
