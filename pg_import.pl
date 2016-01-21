@@ -188,8 +188,8 @@ sub statcast_table($gamedir) {
     }
 }
 
-sub check_gameid($gamedir, $home, $away, $game_id, $game_number)) {
-        # Check if game info has been input before inputting umpire, at bat, and pitch info
+sub check_gameid($gamedir, $home, $away, $game_id, $game_number) {
+    # Check if game info has been input before inputting umpire, at bat, and pitch info
     $game_id_query = 'SELECT game_id FROM games WHERE (date = ' . $gamedate
     . ' AND home = ' . $home . ' AND away = ' . $away . ' AND game = ' . $game_number . ')';
     $sth= $dbh->prepare($game_id_query) or die $DBI::errstr;
