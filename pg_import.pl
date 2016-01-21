@@ -569,3 +569,5 @@ sub parse_at_bats_and_pitches($atbat, $dbh, $select_game_id, $inning_num, $half)
         }
     }
 }
+
+process_directory($basedir);
