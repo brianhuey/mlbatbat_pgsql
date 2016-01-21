@@ -110,7 +110,7 @@ sub games_table {
             # don't insert duplicate game entry into games table
         } else {
             $game_query = 'INSERT INTO games (date, home, away, game, wind, wind_dir, temp,
-            runs_home, runs_away, local_time, game_id, completion) VALUES (' . $gamedate . ', '. $home . ', ' . $away
+            runs_home, runs_away, local_time, game_id, completion) VALUES (' . $game_date . ', '. $home . ', ' . $away
             . ', ' . $game_number . ', ' . $wind . ', ' . $wind_dir . ', ' . $temperature . ', '
             . $home_team_runs . ', ' . $away_team_runs . ', ' . $game_time . ',' . $game_id . ',' . $status_ind . ')';
             $sth= $dbh->prepare($game_query) or die $DBI::errstr;
