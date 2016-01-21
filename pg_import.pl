@@ -293,11 +293,11 @@ foreach $mondir (@monthdirs) {
                 closedir GDIR;
                 foreach $gamedir (@gamedirs) {
                     if ($gamedir =~ /gid_/ and (-e "$basedir/$mondir/$daydir/$gamedir/inning/inning_hit.xml")) {
-                            $fulldir = "$basedir/$mondir/$daydir/$gamedir";
-                            $box = $boxparser->XMLin("$fulldir/boxscore.xml");
-                            my ($home, $away, $game_id, $gamedate, $gameinfo, $away_team_runs, $home_team_runs, $status_ind) = extract_info($box);
-                            # Game number = 1, unless the 2nd game of a doubleheader when game number = 2
-                            $game_number = substr($game_id, -2, 1);
+                        $fulldir = "$basedir/$mondir/$daydir/$gamedir";
+                        $box = $boxparser->XMLin("$fulldir/boxscore.xml");
+                        my ($home, $away, $game_id, $gamedate, $gameinfo, $away_team_runs, $home_team_runs, $status_ind) = extract_info($box);
+                        # Game number = 1, unless the 2nd game of a doubleheader when game number = 2
+                        $game_number = substr($game_id, -2, 1);
                         if ($gameinfo =~ /<br\/><b>Weather<\/b>: (\d+) degrees,.*<br\/><b>Wind<\/b>: (\d+) mph, ([\w\s]+).<br\/>/) {
                             $temperature = $1;
                             $wind = $2;
