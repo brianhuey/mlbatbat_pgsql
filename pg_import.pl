@@ -374,7 +374,7 @@ sub process_directory($basedir) {
                     closedir GDIR;
                     foreach $fulldir (@gamedirs) {
                         $fulldir = "$basedir/$mondir/$daydir/$fulldir";
-                        my ($home, $away, $game_id, $gamedate) = games_table($fulldir);
+                        ($home, $away, $game_id, $gamedate) = games_table($fulldir);
                         # PLAYERS table
                         players_table($fulldir);
                         statcast_table($fulldir);
