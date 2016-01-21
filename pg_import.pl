@@ -76,75 +76,71 @@ sub description($) {
 
 sub games_table {
     my ($fulldir, $dbh) = @_;
-    if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
-        my $box = $boxparser->XMLin("$fulldir/boxscore.xml");
-        my ($home, $away, $game_id, $game_date, $gameinfo, $away_team_runs, $home_team_runs, $status_ind) = extract_info($box);
-        # Game number = 1, unless the 2nd game of a doubleheader when game number = 2
-        $game_number = substr($game_id, -2, 1);
-        if ($gameinfo =~ /<br\/><b>Weather<\/b>: (\d+) degrees,.*<br\/><b>Wind<\/b>: (\d+) mph, ([\w\s]+).<br\/>/) {
-            $temperature = $1;
-            $wind = $2;
-            $wind_dir = "'" . $3 . "'";
-        } else {
-            $gameinfo =~ /<br\/><b>Weather<\/b>: (\d+) degrees,.*<br\/><b>Wind<\/b>: (\bIndoors|0 mph)/;
-            # Domed stadiums may list wind speed as "Indoors"
-            $temperature = $1;
-            $wind = 0;
-            $wind_dir = "'Indoors'";
-        }
-        $home = $dbh->quote($home);
-        $away = $dbh->quote($away);
-        $game = $gameparser->XMLin("$fulldir/game.xml");
-        $game_time = $game->{game}->[0]->{local_game_time};
-        $game_time = $dbh->quote($game_time);
-        $status_ind = $dbh->quote($status_ind);
-        # Input the game info into the database
-        $no_duplicate_query = 'SELECT game_id FROM games WHERE (date = ' . $game_date
-        . ' AND home = ' . $home . ' AND away = ' . $away . ' AND game = ' . $game_number
-        . ' AND game_id = ' . $game_id . ')';
-        $sth= $dbh->prepare($no_duplicate_query) or die $DBI::errstr;
-        $sth->execute();
-        my $numRows = $sth->rows;
-        $sth->finish();
-        if ($numRows) {
-            # don't insert duplicate game entry into games table
-        } else {
-            $game_query = 'INSERT INTO games (date, home, away, game, wind, wind_dir, temp,
-            runs_home, runs_away, local_time, game_id, completion) VALUES (' . $game_date . ', '. $home . ', ' . $away
-            . ', ' . $game_number . ', ' . $wind . ', ' . $wind_dir . ', ' . $temperature . ', '
-            . $home_team_runs . ', ' . $away_team_runs . ', ' . $game_time . ',' . $game_id . ',' . $status_ind . ')';
-            $sth= $dbh->prepare($game_query) or die $DBI::errstr;
-            $sth->execute();
-            $sth->finish();
-        }
-        return ($home, $away, $game_id, $game_date, $game_number);
+    my $box = $boxparser->XMLin("$fulldir/boxscore.xml");
+    my ($home, $away, $game_id, $game_date, $gameinfo, $away_team_runs, $home_team_runs, $status_ind) = extract_info($box);
+    # Game number = 1, unless the 2nd game of a doubleheader when game number = 2
+    $game_number = substr($game_id, -2, 1);
+    if ($gameinfo =~ /<br\/><b>Weather<\/b>: (\d+) degrees,.*<br\/><b>Wind<\/b>: (\d+) mph, ([\w\s]+).<br\/>/) {
+        $temperature = $1;
+        $wind = $2;
+        $wind_dir = "'" . $3 . "'";
+    } else {
+        $gameinfo =~ /<br\/><b>Weather<\/b>: (\d+) degrees,.*<br\/><b>Wind<\/b>: (\bIndoors|0 mph)/;
+        # Domed stadiums may list wind speed as "Indoors"
+        $temperature = $1;
+        $wind = 0;
+        $wind_dir = "'Indoors'";
     }
+    $home = $dbh->quote($home);
+    $away = $dbh->quote($away);
+    $game = $gameparser->XMLin("$fulldir/game.xml");
+    $game_time = $game->{game}->[0]->{local_game_time};
+    $game_time = $dbh->quote($game_time);
+    $status_ind = $dbh->quote($status_ind);
+    # Input the game info into the database
+    $no_duplicate_query = 'SELECT game_id FROM games WHERE (date = ' . $game_date
+    . ' AND home = ' . $home . ' AND away = ' . $away . ' AND game = ' . $game_number
+    . ' AND game_id = ' . $game_id . ')';
+    $sth= $dbh->prepare($no_duplicate_query) or die $DBI::errstr;
+    $sth->execute();
+    my $numRows = $sth->rows;
+    $sth->finish();
+    if ($numRows) {
+        # don't insert duplicate game entry into games table
+    } else {
+        $game_query = 'INSERT INTO games (date, home, away, game, wind, wind_dir, temp,
+        runs_home, runs_away, local_time, game_id, completion) VALUES (' . $game_date . ', '. $home . ', ' . $away
+        . ', ' . $game_number . ', ' . $wind . ', ' . $wind_dir . ', ' . $temperature . ', '
+        . $home_team_runs . ', ' . $away_team_runs . ', ' . $game_time . ',' . $game_id . ',' . $status_ind . ')';
+        $sth= $dbh->prepare($game_query) or die $DBI::errstr;
+        $sth->execute();
+        $sth->finish();
+    }
+    return ($home, $away, $game_id, $game_date, $game_number);
 }
 
 sub players_table {
     my ($fulldir, $dbh) = @_;
-    if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
-        my $players = $playerparser->XMLin("$fulldir/players.xml");
-        foreach $team (@{$players->{game}->[0]->{team}}) {
-            foreach $player (@{$team->{player}}) {
-                $id = $player->{id};
-                $first = $dbh->quote($player->{first});
-                $last = $dbh->quote($player->{last});
-                $throws = $dbh->quote($player->{rl});
-                $no_duplicate_query = 'SELECT eliasid FROM players WHERE eliasid = ' . $id;
-                $sth= $dbh->prepare($no_duplicate_query) or die $DBI::errstr;
+    my $players = $playerparser->XMLin("$fulldir/players.xml");
+    foreach $team (@{$players->{game}->[0]->{team}}) {
+        foreach $player (@{$team->{player}}) {
+            $id = $player->{id};
+            $first = $dbh->quote($player->{first});
+            $last = $dbh->quote($player->{last});
+            $throws = $dbh->quote($player->{rl});
+            $no_duplicate_query = 'SELECT eliasid FROM players WHERE eliasid = ' . $id;
+            $sth= $dbh->prepare($no_duplicate_query) or die $DBI::errstr;
+            $sth->execute();
+            my $numRows = $sth->rows;
+            $sth->finish();
+            if ($numRows) {
+                # don't insert duplicate player entry into players table
+            } else {
+                $player_query = 'INSERT INTO players (eliasid, first, last, throws) '
+                . 'VALUES (' . $id . ', '. $first . ', ' . $last . ', ' . $throws . ')';
+                $sth= $dbh->prepare($player_query) or die $DBI::errstr;
                 $sth->execute();
-                my $numRows = $sth->rows;
                 $sth->finish();
-                if ($numRows) {
-                    # don't insert duplicate player entry into players table
-                } else {
-                    $player_query = 'INSERT INTO players (eliasid, first, last, throws) '
-                    . 'VALUES (' . $id . ', '. $first . ', ' . $last . ', ' . $throws . ')';
-                    $sth= $dbh->prepare($player_query) or die $DBI::errstr;
-                    $sth->execute();
-                    $sth->finish();
-                }
             }
         }
     }
@@ -152,39 +148,37 @@ sub players_table {
 
 sub statcast_table {
     my ($fulldir, $dbh, $game_id) = @_;
-    if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
-        my $sc_file = "$fulldir/color.json";
-        open(my $fh, '<', $sc_file) or die "Can't open $sc_file: $!";
-        while (my $line = <$fh>){ $json = $line; };
-        my $sc_json = decode_json($json);
-        foreach $item (@{$sc_json->{items}}) {
-            if ($item->{id} = "playResult") {
-                my $event_num = 0;
-                if ($item->{guid} =~ /playResult_(\d+)/) {
-                    $event_num = $1;
-                }
-                my ($distance, $speed) = description($item->{data}->{description});
-                if ((not $distance) and (not $speed)) {
-                    # If no statcast data, don't submit
-                } elsif (not $distance) {
-                    $sc_query = 'INSERT INTO statcast (game_id, event_num, speed) '
-                    . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $speed . ')';
-                    $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
-                    $sth->execute();
-                    $sth->finish();
-                } elsif (not $speed) {
-                    $sc_query = 'INSERT INTO statcast (game_id, event_num, distance) '
-                    . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $distance . ')';
-                    $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
-                    $sth->execute();
-                    $sth->finish();
-                } else {
-                    $sc_query = 'INSERT INTO statcast (game_id, event_num, distance, speed) '
-                        . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $distance . ', ' . $speed . ')';
-                    $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
-                    $sth->execute();
-                    $sth->finish();
-                }
+    my $sc_file = "$fulldir/color.json";
+    open(my $fh, '<', $sc_file) or die "Can't open $sc_file: $!";
+    while (my $line = <$fh>){ $json = $line; };
+    my $sc_json = decode_json($json);
+    foreach $item (@{$sc_json->{items}}) {
+        if ($item->{id} = "playResult") {
+            my $event_num = 0;
+            if ($item->{guid} =~ /playResult_(\d+)/) {
+                $event_num = $1;
+            }
+            my ($distance, $speed) = description($item->{data}->{description});
+            if ((not $distance) and (not $speed)) {
+                # If no statcast data, don't submit
+            } elsif (not $distance) {
+                $sc_query = 'INSERT INTO statcast (game_id, event_num, speed) '
+                . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $speed . ')';
+                $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
+                $sth->execute();
+                $sth->finish();
+            } elsif (not $speed) {
+                $sc_query = 'INSERT INTO statcast (game_id, event_num, distance) '
+                . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $distance . ')';
+                $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
+                $sth->execute();
+                $sth->finish();
+            } else {
+                $sc_query = 'INSERT INTO statcast (game_id, event_num, distance, speed) '
+                    . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $distance . ', ' . $speed . ')';
+                $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
+                $sth->execute();
+                $sth->finish();
             }
         }
     }
@@ -209,55 +203,53 @@ sub check_gameid {
 
 sub umpires_table {
     my ($fulldir, $dbh) = @_;
-    if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
-        my $players = $playerparser->XMLin("$fulldir/players.xml");
-        foreach $umpire (@{$players->{game}->[0]->{umpires}->[0]->{umpire}}) {
-            $umpire_name = $umpire->{name};
-            ($umpire_first, $umpire_last) = split(/\s/, $umpire_name);
-            $umpire_first = $dbh->quote($umpire_first);
-            $umpire_last = $dbh->quote($umpire_last);
-            $umpire_id = $umpire->{id};
-            $position = $umpire->{position};
-            if ('home' eq $position) {
-                $no_duplicate_query = 'SELECT ump_id FROM umpires WHERE first = ' . $umpire_first
-                . ' AND last = ' . $umpire_last;
-                $sth= $dbh->prepare($no_duplicate_query) or die $DBI::errstr;
-                $sth->execute();
+    my $players = $playerparser->XMLin("$fulldir/players.xml");
+    foreach $umpire (@{$players->{game}->[0]->{umpires}->[0]->{umpire}}) {
+        $umpire_name = $umpire->{name};
+        ($umpire_first, $umpire_last) = split(/\s/, $umpire_name);
+        $umpire_first = $dbh->quote($umpire_first);
+        $umpire_last = $dbh->quote($umpire_last);
+        $umpire_id = $umpire->{id};
+        $position = $umpire->{position};
+        if ('home' eq $position) {
+            $no_duplicate_query = 'SELECT ump_id FROM umpires WHERE first = ' . $umpire_first
+            . ' AND last = ' . $umpire_last;
+            $sth= $dbh->prepare($no_duplicate_query) or die $DBI::errstr;
+            $sth->execute();
+        my $numRows = $sth->rows;
+        if ($numRows) {
+            # don't insert duplicate umpire entry into umpires table
+            # get umpire id
+            $select_ump_id = $sth->fetchrow_array();
+            $sth->finish();
+        } else {
+            $sth->finish();
+            $umpire_query = 'INSERT INTO umpires (first, last) '
+            . 'VALUES (' . $umpire_first . ', ' . $umpire_last . ')';
+            $sth= $dbh->prepare($umpire_query) or die $DBI::errstr;
+            $sth->execute();
+            $sth->finish();
+            # get umpire id
+            $umpire_id_query = 'SELECT ump_id FROM umpires WHERE first = ' . $umpire_first
+            . ' AND last = ' . $umpire_last;
+            $sth= $dbh->prepare($umpire_id_query) or die $DBI::errstr;
+            $sth->execute();
             my $numRows = $sth->rows;
-            if ($numRows) {
-                # don't insert duplicate umpire entry into umpires table
-                # get umpire id
+            if (1==$numRows) {
                 $select_ump_id = $sth->fetchrow_array();
                 $sth->finish();
             } else {
-                $sth->finish();
-                $umpire_query = 'INSERT INTO umpires (first, last) '
-                . 'VALUES (' . $umpire_first . ', ' . $umpire_last . ')';
-                $sth= $dbh->prepare($umpire_query) or die $DBI::errstr;
-                $sth->execute();
-                $sth->finish();
-                # get umpire id
-                $umpire_id_query = 'SELECT ump_id FROM umpires WHERE first = ' . $umpire_first
-                . ' AND last = ' . $umpire_last;
-                $sth= $dbh->prepare($umpire_id_query) or die $DBI::errstr;
-                $sth->execute();
-                my $numRows = $sth->rows;
-                if (1==$numRows) {
-                    $select_ump_id = $sth->fetchrow_array();
-                    $sth->finish();
-                } else {
-                    die "numrows=$numRows, duplicate umpire entry $umpire_first $umpire_last in database or umpire not found.\n";
-                }
-            }
-            } else {
-                # ignore base umpires
+                die "numrows=$numRows, duplicate umpire entry $umpire_first $umpire_last in database or umpire not found.\n";
             }
         }
-        # update game record with umpire id
-        $umpire_update_query = 'UPDATE games SET umpire = ' . $select_ump_id. ' WHERE game_id = ' . "'" . $select_game_id . "'";
-        $sth= $dbh->prepare($umpire_update_query) or die $DBI::errstr;
-        $sth->execute();
+        } else {
+            # ignore base umpires
+        }
     }
+    # update game record with umpire id
+    $umpire_update_query = 'UPDATE games SET umpire = ' . $select_ump_id. ' WHERE game_id = ' . "'" . $select_game_id . "'";
+    $sth= $dbh->prepare($umpire_update_query) or die $DBI::errstr;
+    $sth->execute();
 }
 
 sub parse_po {
@@ -543,9 +535,8 @@ sub process_directory {
     ($basedir, $dbh) = @_;
     # Get the list of months from the base year directory
     opendir MDIR, $basedir;
-    @monthdirs = readdir MDIR;
+    my @monthdirs = readdir MDIR;
     closedir MDIR;
-
     foreach $mondir (@monthdirs) {
         if ($mondir =~ /month/) {
             opendir DDIR, "$basedir/$mondir";
@@ -558,14 +549,15 @@ sub process_directory {
                     closedir GDIR;
                     foreach $gamedir (@gamedirs) {
                         my $fulldir = "$basedir/$mondir/$daydir/$gamedir";
-                        my ($home, $away, $game_id, $game_date, $game_number) = games_table($fulldir, $dbh);
-                        # PLAYERS table
-                        players_table($fulldir, $dbh);
-                        statcast_table($fulldir, $dbh, $game_id);
-                        check_gameid($fulldir, $dbh, $home, $away, $game_id, $game_date, $game_number);
-                        umpires_table($fulldir, $dbh);
-                        atbats_pitches_table($fulldir, $dbh, $game_id);
-                        hitrecord($fulldir, $dbh);
+                        if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
+                            my ($home, $away, $game_id, $game_date, $game_number) = games_table($fulldir, $dbh);
+                            players_table($fulldir, $dbh);
+                            statcast_table($fulldir, $dbh, $game_id);
+                            check_gameid($fulldir, $dbh, $home, $away, $game_id, $game_date, $game_number);
+                            umpires_table($fulldir, $dbh);
+                            atbats_pitches_table($fulldir, $dbh, $game_id);
+                            hitrecord($fulldir, $dbh);
+                        }
                     }
                 }
             }
