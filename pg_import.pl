@@ -152,7 +152,7 @@ sub players_table {
 }
 
 sub statcast_table {
-    my ($fulldir, $dbh) = @_;
+    my ($fulldir, $dbh, $game_id) = @_;
     if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
         my $sc_file = "$fulldir/color.json";
         open(my $fh, '<', $sc_file) or die "Can't open $sc_file: $!";
@@ -562,7 +562,7 @@ sub process_directory {
                         my ($home, $away, $game_id, $game_date, $game_number) = games_table($fulldir, $dbh);
                         # PLAYERS table
                         players_table($fulldir, $dbh);
-                        statcast_table($fulldir, $dbh);
+                        statcast_table($fulldir, $dbh, $game_id);
                         check_gameid($fulldir, $dbh, $home, $away, $game_id, $game_date, $game_number);
                         umpires_table($fulldir, $dbh);
                         atbats_pitches_table($fulldir, $dbh, $game_id);
