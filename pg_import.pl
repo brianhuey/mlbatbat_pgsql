@@ -557,7 +557,7 @@ sub process_directory {
                             umpires_table($fulldir, $dbh);
                             atbats_pitches_table($fulldir, $dbh, $game_id);
                             hitrecord($fulldir, $dbh);
-                        }
+                        } else { }
                     }
                 }
             }
