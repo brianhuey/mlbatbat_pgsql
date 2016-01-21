@@ -75,7 +75,7 @@ sub description($) {
 }
 
 sub games_table($) {
-    my ($fulldir) = @_;
+    my ($fulldir, $dbh) = @_;
     if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
         my $box = $boxparser->XMLin("$fulldir/boxscore.xml");
         my ($home, $away, $game_id, $gamedate, $gameinfo, $away_team_runs, $home_team_runs, $status_ind) = extract_info($box);
@@ -123,7 +123,7 @@ sub games_table($) {
 }
 
 sub players_table($) {
-    my ($fulldir) = @_;
+    my ($fulldir, $dbh) = @_;
     if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
         my $players = $playerparser->XMLin("$fulldir/players.xml");
         foreach $team (@{$players->{game}->[0]->{team}}) {
@@ -152,7 +152,7 @@ sub players_table($) {
 }
 
 sub statcast_table($) {
-    my ($fulldir) = @_;
+    my ($fulldir, $dbh) = @_;
     if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
         my $sc_file = "$fulldir/color.json";
         open(my $fh, '<', $sc_file) or die "Can't open $sc_file: $!";
@@ -191,7 +191,8 @@ sub statcast_table($) {
     }
 }
 
-sub check_gameid($home, $away, $game_id, $game_number) {
+sub check_gameid($) {
+    my ($full_dir, $dbh, $home, $away, $game_id, $game_number) = @_;
     # Check if game info has been input before inputting umpire, at bat, and pitch info
     $game_id_query = 'SELECT game_id FROM games WHERE (date = ' . $gamedate
     . ' AND home = ' . $home . ' AND away = ' . $away . ' AND game = ' . $game_number . ')';
@@ -208,7 +209,7 @@ sub check_gameid($home, $away, $game_id, $game_number) {
 }
 
 sub umpires_table($) {
-    my ($fulldir) = @_;
+    my ($fulldir, $dbh) = @_;
     if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
         my $players = $playerparser->XMLin("$fulldir/players.xml");
         foreach $umpire (@{$players->{game}->[0]->{umpires}->[0]->{umpire}}) {
@@ -260,7 +261,8 @@ sub umpires_table($) {
     }
 }
 
-sub parse_po($atbat, $dbh, $select_game_id, $inning_num, $half) {
+sub parse_po($) {
+    my ($atbat, $dbh, $select_game_id, $inning_num, $half) = @_;
     foreach $po (@{$atbat->{po}}) {
         $des = $dbh->quote($po->{des});
         $event_num = $po->{event_num};
@@ -277,7 +279,8 @@ sub parse_po($atbat, $dbh, $select_game_id, $inning_num, $half) {
     }
 }
 
-sub parse_runner($atbat, $dbh, $select_game_id, $inning_num, $half) {
+sub parse_runner($) {
+    my ($atbat, $dbh, $select_game_id, $inning_num, $half) = @_;
     foreach $runner (@{$atbat->{runner}}) {
         $runner_id = $runner->{id};
         $start = $dbh->quote($runner->{start});
@@ -297,7 +300,8 @@ sub parse_runner($atbat, $dbh, $select_game_id, $inning_num, $half) {
     }
 }
 
-sub parse_action($action, $dbh, $select_game_id, $inning_num, $half) {
+sub parse_action($) {
+    my ($action, $dbh, $select_game_id, $inning_num, $half) = @_;
     $event_num = $action->{event_num};
     $des = $dbh->quote($action->{des});
     $ball = $action->{b};
@@ -318,7 +322,8 @@ sub parse_action($action, $dbh, $select_game_id, $inning_num, $half) {
     $sth->finish();
 }
 
-sub parse_at_bats_and_pitches($atbat, $dbh, $select_game_id, $inning_num, $half) {
+sub parse_at_bats_and_pitches($) {
+    my ($atbat, $dbh, $select_game_id, $inning_num, $half) = @_;
     $event = $dbh->quote($atbat->{event});
     $num = $atbat->{num};
     $ball = $atbat->{b};
@@ -422,7 +427,7 @@ sub parse_at_bats_and_pitches($atbat, $dbh, $select_game_id, $inning_num, $half)
 }
 
 sub atbats_pitches_table($) {
-    my ($fulldir) = @_;
+    my ($fulldir, $dbh, $select_game_id) = @_;
     opendir IDIR, "$fulldir/inning";
     my @inningfiles = readdir IDIR;
     closedir IDIR;
@@ -459,7 +464,8 @@ sub atbats_pitches_table($) {
     }
 }
 
-sub update_hit_info($hit_x, $hit_y, $hit_type, $select_ab_id) {
+sub update_hit_info($) {
+    my ($dbh, $hit_x, $hit_y, $hit_type, $select_ab_id) = @_;
     # update at bat record with hit info
     $hit_query = 'UPDATE atbats SET hit_x = ' . $hit_x . ', hit_y = ' . $hit_y
     . ', hit_type = ' . $hit_type . ' WHERE ab_id = ' . "'" . $select_ab_id . "'";
@@ -468,7 +474,8 @@ sub update_hit_info($hit_x, $hit_y, $hit_type, $select_ab_id) {
     $sth->finish();
 }
 
-sub hitrecord($fulldir, $game_id) {
+sub hitrecord($) {
+    my ($fulldir, $dbh, $game_id) = @_;
     $hits = $hitsparser->XMLin("$fulldir/inning/inning_hit.xml");
     # When a ball in play and an error are recorded on the same play,
     # the error may be the first play listed in inning_hit.xml or the second play.
@@ -501,7 +508,7 @@ sub hitrecord($fulldir, $game_id) {
                 # already entered into database
                 print HITRECORD "game $select_game_id:1.1 This hit $hit_batter - $hit_pitcher - $hit_inning already recorded in database.\n";
             } else {
-                update_hit_info($hit_x, $hit_y, $hit_type, $select_ab_id);
+                update_hit_info($dbh, $hit_x, $hit_y, $hit_type, $select_ab_id);
             }
         }
         elsif (2==$numRows) {
@@ -518,11 +525,11 @@ sub hitrecord($fulldir, $game_id) {
                     print HITRECORD "game $select_game_id:2.2 This hit $hit_batter - $hit_pitcher - $hit_inning already recorded in database.\n";
                 } else {
                     # if the second ball in play hasn't been recorded, update the db
-                    update_hit_info($hit_x, $hit_y, $hit_type, $select_ab_id);
+                    update_hit_info($dbh, $hit_x, $hit_y, $hit_type, $select_ab_id);
                 }
             } else {
                 # if the first ball in play hasn't been recorded, update the db
-                update_hit_info($hit_x, $hit_y, $hit_type, $select_ab_id);
+                update_hit_info($dbh, $hit_x, $hit_y, $hit_type, $select_ab_id);
             }
         } else {
             die "numrows=$numRows, no matching at bat found for hit $hit_batter - $hit_pitcher - $hit_inning.\n";
@@ -531,7 +538,7 @@ sub hitrecord($fulldir, $game_id) {
     close HITRECORD;
 }
 sub process_directory($) {
-    $basedir = @_;
+    ($basedir, $dbh) = @_;
     # Get the list of months from the base year directory
     opendir MDIR, $basedir;
     @monthdirs = readdir MDIR;
@@ -549,14 +556,14 @@ sub process_directory($) {
                     closedir GDIR;
                     foreach $fulldir (@gamedirs) {
                         $fulldir = "$basedir/$mondir/$daydir/$fulldir";
-                        ($home, $away, $game_id, $gamedate) = games_table($fulldir);
+                        ($home, $away, $game_id, $gamedate) = games_table($fulldir, $dbh);
                         # PLAYERS table
-                        players_table($fulldir);
-                        statcast_table($fulldir);
-                        check_gameid($fulldir, $home, $away, $game_id, $gamedate);
-                        umpire_table($fulldir);
-                        atbats_pitches_table($fulldir);
-                        hitrecord($fulldir);
+                        players_table($fulldir, $dbh);
+                        statcast_table($fulldir, $dbh);
+                        check_gameid($fulldir, $dbh, $home, $away, $game_id, $gamedate);
+                        umpire_table($fulldir, $dbh);
+                        atbats_pitches_table($fulldir, $dbh, $game_id);
+                        hitrecord($fulldir, $dbh);
                     }
                 }
             }
@@ -575,4 +582,4 @@ sub process_directory($) {
 #           print OUTFILE Dumper(@innings);
 #           close OUTFILE;
 
-process_directory($basedir);
+process_directory($basedir, $dbh);
