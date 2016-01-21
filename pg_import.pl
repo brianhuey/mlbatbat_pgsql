@@ -191,22 +191,6 @@ sub statcast_table($) {
     }
 }
 
-sub check_gameid($fulldir, $home, $away, $game_id, $game_number) {
-    # Check if game info has been input before inputting umpire, at bat, and pitch info
-    $game_id_query = 'SELECT game_id FROM games WHERE (date = ' . $gamedate
-    . ' AND home = ' . $home . ' AND away = ' . $away . ' AND game = ' . $game_number . ')';
-    $sth= $dbh->prepare($game_id_query) or die $DBI::errstr;
-    $sth->execute();
-    my $numRows = $sth->rows;
-    if (1==$numRows) {
-        $select_game_id = $sth->fetchrow_array();
-        print "\nParsing game number $select_game_id ($fulldir).\n";
-    } else {
-        die "duplicate game entry $select_game_id in database or game not found.\n";
-    }
-    $sth->finish();
-}
-
 sub umpires_table($) {
     my ($fulldir) = @_;
     if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
@@ -404,6 +388,22 @@ sub process_directory($basedir) {
 #           print OUTFILE Dumper($box);
 #           print OUTFILE Dumper(@innings);
 #           close OUTFILE;
+
+sub check_gameid($home, $away, $game_id, $game_number) {
+    # Check if game info has been input before inputting umpire, at bat, and pitch info
+    $game_id_query = 'SELECT game_id FROM games WHERE (date = ' . $gamedate
+    . ' AND home = ' . $home . ' AND away = ' . $away . ' AND game = ' . $game_number . ')';
+    $sth= $dbh->prepare($game_id_query) or die $DBI::errstr;
+    $sth->execute();
+    my $numRows = $sth->rows;
+    if (1==$numRows) {
+        $select_game_id = $sth->fetchrow_array();
+        print "\nParsing game number $select_game_id ($fulldir).\n";
+    } else {
+        die "duplicate game entry $select_game_id in database or game not found.\n";
+    }
+    $sth->finish();
+}
 
 sub update_hit_info($hit_x, $hit_y, $hit_type, $select_ab_id) {
     # update at bat record with hit info
