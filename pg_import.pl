@@ -263,6 +263,7 @@ sub umpires_table {
 
 sub parse_po {
     my ($atbat, $dbh, $select_game_id, $inning_num, $half) = @_;
+    $select_game_id = substr($select_game_id,1,30);
     foreach $po (@{$atbat->{po}}) {
         $des = $dbh->quote($po->{des});
         $event_num = $po->{event_num};
@@ -281,6 +282,7 @@ sub parse_po {
 
 sub parse_runner {
     my ($atbat, $dbh, $select_game_id, $inning_num, $half) = @_;
+    $select_game_id = substr($select_game_id,1,30);
     foreach $runner (@{$atbat->{runner}}) {
         $runner_id = $runner->{id};
         $start = $dbh->quote($runner->{start});
@@ -302,6 +304,7 @@ sub parse_runner {
 
 sub parse_action {
     my ($action, $dbh, $select_game_id, $inning_num, $half) = @_;
+    $select_game_id = substr($select_game_id,1,30);
     $event_num = $action->{event_num};
     $des = $dbh->quote($action->{des});
     $ball = $action->{b};
@@ -324,6 +327,7 @@ sub parse_action {
 
 sub parse_at_bats_and_pitches {
     my ($atbat, $dbh, $select_game_id, $inning_num, $half) = @_;
+    $select_game_id = substr($select_game_id,1,30);
     $event = $dbh->quote($atbat->{event});
     $num = $atbat->{num};
     $ball = $atbat->{b};
