@@ -74,9 +74,9 @@ sub description($) {
     return ($distance, $speed);
 }
 
-sub games_table($gamedir) {
-    if ($gamedir =~ /gid_/ and (-e "$gamedir/inning/inning_hit.xml")) {
-        my $box = $boxparser->XMLin("$gamedir/boxscore.xml");
+sub games_table($fulldir) {
+    if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
+        my $box = $boxparser->XMLin("$fulldir/boxscore.xml");
         my ($home, $away, $game_id, $gamedate, $gameinfo, $away_team_runs, $home_team_runs, $status_ind) = extract_info($box);
         # Game number = 1, unless the 2nd game of a doubleheader when game number = 2
         $game_number = substr($game_id, -2, 1);
@@ -121,9 +121,9 @@ sub games_table($gamedir) {
     }
 }
 
-sub players_table($gamedir) {
-    if ($gamedir =~ /gid_/ and (-e "$gamedir/inning/inning_hit.xml")) {
-        my $players = $playerparser->XMLin("$gamedir/players.xml");
+sub players_table($fulldir) {
+    if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
+        my $players = $playerparser->XMLin("$fulldir/players.xml");
         foreach $team (@{$players->{game}->[0]->{team}}) {
             foreach $player (@{$team->{player}}) {
                 $id = $player->{id};
@@ -149,9 +149,9 @@ sub players_table($gamedir) {
     }
 }
 
-sub statcast_table($gamedir) {
-    if ($gamedir =~ /gid_/ and (-e "$gamedir/inning/inning_hit.xml")) {
-        my $sc_file = "$gamedir/color.json";
+sub statcast_table($fulldir) {
+    if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
+        my $sc_file = "$fulldir/color.json";
         open(my $fh, '<', $sc_file) or die "Can't open $sc_file: $!";
         while (my $line = <$fh>){ $json = $line; };
         my $sc_json = decode_json($json);
@@ -188,7 +188,7 @@ sub statcast_table($gamedir) {
     }
 }
 
-sub check_gameid($gamedir, $home, $away, $game_id, $game_number) {
+sub check_gameid($fulldir, $home, $away, $game_id, $game_number) {
     # Check if game info has been input before inputting umpire, at bat, and pitch info
     $game_id_query = 'SELECT game_id FROM games WHERE (date = ' . $gamedate
     . ' AND home = ' . $home . ' AND away = ' . $away . ' AND game = ' . $game_number . ')';
@@ -197,16 +197,16 @@ sub check_gameid($gamedir, $home, $away, $game_id, $game_number) {
     my $numRows = $sth->rows;
     if (1==$numRows) {
         $select_game_id = $sth->fetchrow_array();
-        print "\nParsing game number $select_game_id ($gamedir).\n";
+        print "\nParsing game number $select_game_id ($fulldir).\n";
     } else {
         die "duplicate game entry $select_game_id in database or game not found.\n";
     }
     $sth->finish();
 }
 
-sub umpires_table($gamedir) {
-    if ($gamedir =~ /gid_/ and (-e "$gamedir/inning/inning_hit.xml")) {
-        my $players = $playerparser->XMLin("$gamedir/players.xml");
+sub umpires_table($fulldir) {
+    if ($fulldir =~ /gid_/ and (-e "$fulldir/inning/inning_hit.xml")) {
+        my $players = $playerparser->XMLin("$fulldir/players.xml");
         foreach $umpire (@{$players->{game}->[0]->{umpires}->[0]->{umpire}}) {
             $umpire_name = $umpire->{name};
             ($umpire_first, $umpire_last) = split(/\s/, $umpire_name);
@@ -256,8 +256,8 @@ sub umpires_table($gamedir) {
     }
 }
 
-sub atbats_pitches_table($gamedir) {
-    opendir IDIR, "$gamedir/inning";
+sub atbats_pitches_table($fulldir) {
+    opendir IDIR, "$fulldir/inning";
     my @inningfiles = readdir IDIR;
     closedir IDIR;
     my @innings = ();
@@ -266,7 +266,7 @@ sub atbats_pitches_table($gamedir) {
             $inning_num = $1;
             # Pre-process the inning_?.xml file
             $inning = $inningparser->XMLin(
-                "$gamedir/inning/$inningfn");
+                "$fulldir/inning/$inningfn");
             @innings[$inning_num] = $inning;
             # Parse the at-bat and pitch data for the top and bottom halves of each inning
             foreach $atbat (@{$inning->{inning}->[0]->{top}->[0]->{atbat}}) {
@@ -293,7 +293,7 @@ sub atbats_pitches_table($gamedir) {
     }
 }
 
-sub hitrecord($gamedir, $game_id) {
+sub hitrecord($fulldir, $game_id) {
     $hits = $hitsparser->XMLin("$fulldir/inning/inning_hit.xml");
     # When a ball in play and an error are recorded on the same play,
     # the error may be the first play listed in inning_hit.xml or the second play.
@@ -372,16 +372,16 @@ sub process_directory($basedir) {
                     opendir GDIR, "$basedir/$mondir/$daydir";
                     my @gamedirs = readdir GDIR;
                     closedir GDIR;
-                    foreach $gamedir (@gamedirs) {
-                        $gamedir = "$basedir/$mondir/$daydir/$gamedir";
-                        my ($home, $away, $game_id, $gamedate) = games_table($gamedir);
+                    foreach $fulldir (@gamedirs) {
+                        $fulldir = "$basedir/$mondir/$daydir/$fulldir";
+                        my ($home, $away, $game_id, $gamedate) = games_table($fulldir);
                         # PLAYERS table
-                        players_table($gamedir);
-                        statcast_table($gamedir);
-                        check_gameid($gamedir, $home, $away, $game_id, $gamedate);
-                        umpire_table($gamedir);
-                        atbats_pitches_table($gamedir);
-                        hitrecord($gamedir);
+                        players_table($fulldir);
+                        statcast_table($fulldir);
+                        check_gameid($fulldir, $home, $away, $game_id, $gamedate);
+                        umpire_table($fulldir);
+                        atbats_pitches_table($fulldir);
+                        hitrecord($fulldir);
                         }
                     }
                 }
