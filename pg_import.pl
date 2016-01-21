@@ -104,9 +104,9 @@ sub games_table {
     . ' AND home = ' . $home . ' AND away = ' . $away . ' AND game = ' . $game_number
     . ' AND game_id = ' . $game_id . ')';
     my $sth= $dbh->prepare($no_duplicate_query) or die $DBI::errstr;
-    my $sth->execute();
+    $sth->execute();
     my $numRows = $sth->rows;
-    my $sth->finish();
+    $sth->finish();
     if ($numRows) {
         # don't insert duplicate game entry into games table
     } else {
