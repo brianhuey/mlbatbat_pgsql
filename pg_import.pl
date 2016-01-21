@@ -563,7 +563,7 @@ sub process_directory {
                             check_gameid($fulldir, $dbh, $home, $away, $game_id, $game_date, $game_number);
                             umpires_table($fulldir, $dbh);
                             atbats_pitches_table($fulldir, $dbh, $game_id);
-                            #hitrecord($fulldir, $dbh);
+                            hitrecord($fulldir, $dbh, $game_id);
                         }
                     }
                 }
