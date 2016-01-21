@@ -282,7 +282,8 @@ sub atbats_pitches_table($) {
     }
 }
 
-sub process_directory($basedir) {
+sub process_directory($) {
+    $basedir = @_;
     # Get the list of months from the base year directory
     opendir MDIR, $basedir;
     @monthdirs = readdir MDIR;
