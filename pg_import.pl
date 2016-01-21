@@ -118,7 +118,7 @@ sub games_table {
             $sth->execute();
             $sth->finish();
         }
-        return ($home, $away, $game_id, $gamenumber);
+        return ($home, $away, $game_id, $game_number);
     }
 }
 
@@ -555,11 +555,11 @@ sub process_directory {
                     closedir GDIR;
                     foreach $fulldir (@gamedirs) {
                         $fulldir = "$basedir/$mondir/$daydir/$fulldir";
-                        ($home, $away, $game_id, $gamenumber) = games_table($fulldir, $dbh);
+                        ($home, $away, $game_id, $game_number) = games_table($fulldir, $dbh);
                         # PLAYERS table
                         players_table($fulldir, $dbh);
                         statcast_table($fulldir, $dbh);
-                        check_gameid($fulldir, $dbh, $home, $away, $game_id, $gamenumber);
+                        check_gameid($fulldir, $dbh, $home, $away, $game_id, $game_number);
                         umpire_table($fulldir, $dbh);
                         atbats_pitches_table($fulldir, $dbh, $game_id);
                         hitrecord($fulldir, $dbh);
