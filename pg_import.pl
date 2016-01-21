@@ -371,13 +371,13 @@ sub process_directory($basedir) {
                         umpire_table($fulldir);
                         atbats_pitches_table($fulldir);
                         hitrecord($fulldir);
-                        }
                     }
                 }
             }
         }
     }
 }
+
 # This is a debug section if you want to look at contents of the XML file
 # in an easier-to-read format
 #           use Data::Dumper;
