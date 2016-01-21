@@ -94,13 +94,12 @@ sub games_table {
         }
         $home = $dbh->quote($home);
         $away = $dbh->quote($away);
-        # GAMES table
         $game = $gameparser->XMLin("$fulldir/game.xml");
         $game_time = $game->{game}->[0]->{local_game_time};
         $game_time = $dbh->quote($game_time);
         $status_ind = $dbh->quote($status_ind);
         # Input the game info into the database
-        $no_duplicate_query = 'SELECT game_id FROM games WHERE (date = ' . $gamedate
+        $no_duplicate_query = 'SELECT game_id FROM games WHERE (date = ' . $game_date
         . ' AND home = ' . $home . ' AND away = ' . $away . ' AND game = ' . $game_number
         . ' AND game_id = ' . $game_id . ')';
         $sth= $dbh->prepare($no_duplicate_query) or die $DBI::errstr;
