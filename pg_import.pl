@@ -160,7 +160,7 @@ sub statcast_table {
     open(my $fh, '<', $sc_file) or die "Can't open $sc_file: $!";
     while (my $line = <$fh>){ $json = $line; };
     my $sc_json = decode_json($json);
-    my $game_id = substr($game_id, 1, -1);
+    $game_id = substr($game_id, 1, -1);
     foreach $item (@{$sc_json->{items}}) {
         if ($item->{id} = "playResult") {
             if ($item->{guid} =~ /playResult_(\d+)/) {
