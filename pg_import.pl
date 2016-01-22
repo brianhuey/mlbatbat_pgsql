@@ -171,10 +171,9 @@ sub statcast_table {
                 # If no statcast data, don't submit
             } else {
                 $sc_query = 'INSERT INTO statcast (game_id, event_num, distance, speed, angle) '
-                    . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $distance . ', ' . $speed
-                    . ', ' . $angle . ')';
+                    . 'VALUES (?, ?, ?, ?, ?)';
                 $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
-                $sth->execute();
+                $sth->execute($game_id, $event_num, $distance, $speed, $angle);
                 $sth->finish();
             }
         }
