@@ -163,7 +163,6 @@ sub statcast_table {
     my $game_id = substr($game_id, 1, -1);
     foreach $item (@{$sc_json->{items}}) {
         if ($item->{id} = "playResult") {
-            my $event_num = 0;
             if ($item->{guid} =~ /playResult_(\d+)/) {
                 $event_num = $1;
             }
