@@ -24,12 +24,12 @@ use LWP::Simple;
 use JSON qw( decode_json );
 use XML::Simple;
 
-if (scalar @ARGV = 0) {
-    die print "usage 'pg_import.pl -d <dir> -p <path>'";
-} else {
-foreach $arg (@ARGV) {
+# if (scalar @ARGV = 0) {
+#     die print "usage 'pg_import.pl -d <dir> -p <path>'";
+# } else {
+# foreach $arg (@ARGV) {
 
-}
+# }
 
 my $server_pw = $ENV{'DB_PW'};
 $dbh = DBI->connect("DBI:Pg:database=baseball_test;host=localhost", 'power_user', $server_pw )
