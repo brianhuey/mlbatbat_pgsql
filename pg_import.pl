@@ -139,9 +139,9 @@ sub players_table {
 
 sub description($) {
     my ($text) = @_;
-    my $distance = undef;
-    my $speed = undef;
-    my $angle = undef;
+    my $distance = 'null';
+    my $speed = 'null';
+    my $angle = 'null';
     if ($text =~ /(\d+) feet/) {
         $distance = $1;
     }
