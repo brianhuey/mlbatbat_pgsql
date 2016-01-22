@@ -162,16 +162,12 @@ sub statcast_table {
     my $sc_json = decode_json($json);
     foreach $item (@{$sc_json->{items}}) {
         if ($item->{id} = "playResult") {
-            my $event_num = 0;
             if ($item->{guid} =~ /playResult_(\d+)/) {
                 $event_num = $1;
             }
             my ($distance, $speed, $angle) = description($item->{data}->{description});
-            print $distance;
-            print $speed;
-            print $angle;
             if (($distance = undef) and ($speed = undef) and ($angle = undef)) {
-                print 'all null';
+                print 'all null\n';
                 # If no statcast data, don't submit
             } else {
                 if ($distance = undef) { $distance = 'null'; }
