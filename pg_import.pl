@@ -160,6 +160,7 @@ sub statcast_table {
     open(my $fh, '<', $sc_file) or die "Can't open $sc_file: $!";
     while (my $line = <$fh>){ $json = $line; };
     my $sc_json = decode_json($json);
+    my $game_id substr($game_id, 1, -1);
     foreach $item (@{$sc_json->{items}}) {
         if ($item->{id} = "playResult") {
             my $event_num = 0;
@@ -171,9 +172,9 @@ sub statcast_table {
                 # If no statcast data, don't submit
             } else {
                 $sc_query = 'INSERT INTO statcast (game_id, event_num, distance, speed, angle) '
-                    . 'VALUES (' . $game_id . ', ' . $event_num . ', ?, ?, ?)';
+                    . 'VALUES (?, ?, ?, ?, ?)';
                 $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
-                $sth->execute($distance, $speed, $angle);
+                $sth->execute($game_id, $event_num, $distance, $speed, $angle);
                 $sth->finish();
             }
         }
