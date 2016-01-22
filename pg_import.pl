@@ -167,6 +167,9 @@ sub statcast_table {
                 $event_num = $1;
             }
             my ($distance, $speed, $angle) = description($item->{data}->{description});
+            print $distance;
+            print $speed;
+            print $angle;
             if (($distance = 'null') and ($speed = 'null') and ($angle = 'null')) {
                 # If no statcast data, don't submit
             } else {
