@@ -139,9 +139,9 @@ sub players_table {
 
 sub description($) {
     my ($text) = @_;
-    my $distance = 'null';
-    my $speed = 'null';
-    my $angle = 'null';
+    my $distance = undef;
+    my $speed = undef;
+    my $angle = undef;
     if ($text =~ /(\d+) feet/) {
         $distance = $1;
     }
@@ -170,10 +170,13 @@ sub statcast_table {
             print $distance;
             print $speed;
             print $angle;
-            if (($distance = 'null') and ($speed = 'null') and ($angle = 'null')) {
+            if (($distance = undef) and ($speed = undef) and ($angle = undef)) {
                 print 'all null';
                 # If no statcast data, don't submit
             } else {
+                if ($distance = undef) { $distance = 'null'; }
+                if ($speed = undef) { $speed = 'null'; }
+                if ($angle = undef) { $angle = 'null'; }
                 $sc_query = 'INSERT INTO statcast (game_id, event_num, distance, speed, angle) '
                     . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $distance . ', ' . $speed
                     . ', ' . $angle . ')';
