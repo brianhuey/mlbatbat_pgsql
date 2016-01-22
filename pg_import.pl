@@ -173,7 +173,7 @@ sub statcast_table {
                 $sc_query = qq{INSERT INTO statcast (game_id, event_num, distance, speed, angle) VALUES (?, ?, ?, ?, ?)};
                 $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
                 $sth->execute($game_id, $event_num, $distance, $speed, $angle);
-                $sth->finish();
+                #$sth->finish();
             }
         }
     }
