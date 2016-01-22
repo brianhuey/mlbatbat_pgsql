@@ -22,6 +22,15 @@
 use DBI;
 use LWP::Simple;
 use JSON qw( decode_json );
+use XML::Simple;
+
+if (scalar @ARGV = 0) {
+    die print "usage 'pg_import.pl -d <dir> -p <path>'";
+} else {
+foreach $arg (@ARGV) {
+
+}
+
 my $server_pw = $ENV{'DB_PW'};
 $dbh = DBI->connect("DBI:Pg:database=baseball_test;host=localhost", 'power_user', $server_pw )
     or die $DBI::errstr;
@@ -29,14 +38,6 @@ $dbh = DBI->connect("DBI:Pg:database=baseball_test;host=localhost", 'power_user'
 # Set base directory for XML game data download URL
 $year = '2015';
 $basedir = "./games/year_$year";
-
-# Define XML objects
-use XML::Simple;
-
-
-
-
-
 
 sub extract_date($) {
     my($in) = @_;
@@ -63,15 +64,19 @@ sub extract_info($) {
 
 sub description($) {
     my ($text) = @_;
-    my $distance = '';
-    my $speed = '';
+    my $distance = 'null';
+    my $speed = 'null';
+    my $angle = 'null';
     if ($text =~ /(\d+) feet/) {
         $distance = $1;
     }
     if ($text =~ /(\d+) mph/) {
         $speed = $1;
     }
-    return ($distance, $speed);
+    if ($text =~ /(\d+) degrees/) {
+        $angle = $1;
+    }
+    return ($distance, $speed, $angle);
 }
 
 sub games_table {
@@ -161,24 +166,13 @@ sub statcast_table {
             if ($item->{guid} =~ /playResult_(\d+)/) {
                 $event_num = $1;
             }
-            my ($distance, $speed) = description($item->{data}->{description});
-            if ((not $distance) and (not $speed)) {
+            my ($distance, $speed, $angle) = description($item->{data}->{description});
+            if (($distance = 'null') and ($speed = 'null') and ($angle = 'null') {
                 # If no statcast data, don't submit
-            } elsif (not $distance) {
-                $sc_query = 'INSERT INTO statcast (game_id, event_num, speed) '
-                . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $speed . ')';
-                $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
-                $sth->execute();
-                $sth->finish();
-            } elsif (not $speed) {
-                $sc_query = 'INSERT INTO statcast (game_id, event_num, distance) '
-                . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $distance . ')';
-                $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
-                $sth->execute();
-                $sth->finish();
             } else {
-                $sc_query = 'INSERT INTO statcast (game_id, event_num, distance, speed) '
-                    . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $distance . ', ' . $speed . ')';
+                $sc_query = 'INSERT INTO statcast (game_id, event_num, distance, speed, angle) '
+                    . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $distance . ', ' . $speed
+                    . ', ' . $angle . ')';
                 $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
                 $sth->execute();
                 $sth->finish();
@@ -220,32 +214,32 @@ sub umpires_table {
             . ' AND last = ' . $umpire_last;
             $sth= $dbh->prepare($no_duplicate_query) or die $DBI::errstr;
             $sth->execute();
-        my $numRows = $sth->rows;
-        if ($numRows) {
-            # don't insert duplicate umpire entry into umpires table
-            # get umpire id
-            $select_ump_id = $sth->fetchrow_array();
-            $sth->finish();
-        } else {
-            $sth->finish();
-            $umpire_query = 'INSERT INTO umpires (first, last) '
-            . 'VALUES (' . $umpire_first . ', ' . $umpire_last . ')';
-            $sth= $dbh->prepare($umpire_query) or die $DBI::errstr;
-            $sth->execute();
-            $sth->finish();
-            # get umpire id
-            $umpire_id_query = 'SELECT ump_id FROM umpires WHERE first = ' . $umpire_first
-            . ' AND last = ' . $umpire_last;
-            $sth= $dbh->prepare($umpire_id_query) or die $DBI::errstr;
-            $sth->execute();
             my $numRows = $sth->rows;
-            if (1==$numRows) {
+            if ($numRows) {
+                # don't insert duplicate umpire entry into umpires table
+                # get umpire id
                 $select_ump_id = $sth->fetchrow_array();
                 $sth->finish();
             } else {
-                die "numrows=$numRows, duplicate umpire entry $umpire_first $umpire_last in database or umpire not found.\n";
+                $sth->finish();
+                $umpire_query = 'INSERT INTO umpires (first, last) '
+                . 'VALUES (' . $umpire_first . ', ' . $umpire_last . ')';
+                $sth= $dbh->prepare($umpire_query) or die $DBI::errstr;
+                $sth->execute();
+                $sth->finish();
+                # get umpire id
+                $umpire_id_query = 'SELECT ump_id FROM umpires WHERE first = ' . $umpire_first
+                . ' AND last = ' . $umpire_last;
+                $sth= $dbh->prepare($umpire_id_query) or die $DBI::errstr;
+                $sth->execute();
+                my $numRows = $sth->rows;
+                if (1==$numRows) {
+                    $select_ump_id = $sth->fetchrow_array();
+                    $sth->finish();
+                } else {
+                    die "numrows=$numRows, duplicate umpire entry $umpire_first $umpire_last in database or umpire not found.\n";
+                }
             }
-        }
         } else {
             # ignore base umpires
         }
