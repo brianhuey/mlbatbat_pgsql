@@ -167,7 +167,7 @@ sub statcast_table {
                 $event_num = $1;
             }
             my ($distance, $speed, $angle) = description($item->{data}->{description});
-            if (($distance = 'null') and ($speed = 'null') and ($angle = 'null')) {
+            if (($distance = undef) and ($speed = undef) and ($angle = undef)) {
                 # If no statcast data, don't submit
             } else {
                 $sc_query = 'INSERT INTO statcast (game_id, event_num, distance, speed, angle) '
