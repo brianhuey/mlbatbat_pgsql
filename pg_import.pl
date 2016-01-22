@@ -62,23 +62,6 @@ sub extract_info($) {
     return ($home, $away, $game_id, $gamedate, $gameinfo, $away_team_runs, $home_team_runs, $status_ind);
 }
 
-sub description($) {
-    my ($text) = @_;
-    my $distance = 'null';
-    my $speed = 'null';
-    my $angle = 'null';
-    if ($text =~ /(\d+) feet/) {
-        $distance = $1;
-    }
-    if ($text =~ /(\d+) mph/) {
-        $speed = $1;
-    }
-    if ($text =~ /(\d+) degrees/) {
-        $angle = $1;
-    }
-    return ($distance, $speed, $angle);
-}
-
 sub games_table {
     my ($fulldir, $dbh) = @_;
     my $boxparser= new XML::Simple(ForceArray => 1, KeepRoot => 1, KeyAttr => 'boxscore');
@@ -154,6 +137,23 @@ sub players_table {
     }
 }
 
+sub description($) {
+    my ($text) = @_;
+    my $distance = undef;
+    my $speed = undef;
+    my $angle = undef;
+    if ($text =~ /(\d+) feet/) {
+        $distance = $1;
+    }
+    if ($text =~ /(\d+) mph/) {
+        $speed = $1;
+    }
+    if ($text =~ /(\d+) degrees/) {
+        $angle = $1;
+    }
+    return ($distance, $speed, $angle);
+}
+
 sub statcast_table {
     my ($fulldir, $dbh, $game_id) = @_;
     my $sc_file = "$fulldir/color.json";
@@ -182,7 +182,7 @@ sub statcast_table {
 }
 
 sub check_gameid {
-    my ($full_dir, $dbh, $home, $away, $game_id, $game_date, $game_number) = @_;
+    my ($fulldir, $dbh, $home, $away, $game_id, $game_date, $game_number) = @_;
     # Check if game info has been input before inputting umpire, at bat, and pitch info
     $game_id_query = 'SELECT game_id FROM games WHERE (date = ' . $game_date
     . ' AND home = ' . $home . ' AND away = ' . $away . ' AND game = ' . $game_number . ')';
@@ -551,7 +551,6 @@ sub process_directory {
                         if ($gamedir =~ /gid_/ and (-e "$basedir/$mondir/$daydir/$gamedir/inning/inning_hit.xml")) {
                             my $fulldir = "$basedir/$mondir/$daydir/$gamedir";
                             ($home, $away, $game_id, $game_date, $game_number) = games_table($fulldir, $dbh);
-                            print $game_id;
                             players_table($fulldir, $dbh);
                             statcast_table($fulldir, $dbh, $game_id);
                             check_gameid($fulldir, $dbh, $home, $away, $game_id, $game_date, $game_number);
