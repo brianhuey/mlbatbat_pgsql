@@ -170,8 +170,7 @@ sub statcast_table {
             if (($distance = undef) and ($speed = undef) and ($angle = undef)) {
                 # If no statcast data, don't submit
             } else {
-                $sc_query = 'INSERT INTO statcast (game_id, event_num, distance, speed, angle) '
-                    . 'VALUES (?, ?, ?, ?, ?)';
+                $sc_query = 'INSERT INTO statcast (game_id, event_num, distance, speed, angle) VALUES (?, ?, ?, ?, ?)';
                 $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
                 $sth->execute($game_id, $event_num, $distance, $speed, $angle);
                 $sth->finish();
