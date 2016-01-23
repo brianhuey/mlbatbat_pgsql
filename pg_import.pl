@@ -65,13 +65,17 @@ sub description($) {
     my ($text) = @_;
     my $distance = '';
     my $speed = '';
+    my $angle = '';
     if ($text =~ /(\d+) feet/) {
         $distance = $1;
     }
     if ($text =~ /(\d+) mph/) {
         $speed = $1;
     }
-    return ($distance, $speed);
+    if ($text =~ /(\d+) degrees/) {
+        $angle = $1;
+    }
+    return ($distance, $speed, $angle);
 }
 
 sub games_table {
@@ -157,28 +161,18 @@ sub statcast_table {
     my $sc_json = decode_json($json);
     foreach $item (@{$sc_json->{items}}) {
         if ($item->{id} = "playResult") {
-            my $event_num = 0;
             if ($item->{guid} =~ /playResult_(\d+)/) {
-                $event_num = $1;
+                my $event_num = $1;
             }
-            my ($distance, $speed) = description($item->{data}->{description});
-            if ((not $distance) and (not $speed)) {
+            my ($distance, $speed, $angle) = description($item->{data}->{description});
+            if ((not $distance) and (not $speed) and (not $angle)) {
                 # If no statcast data, don't submit
-            } elsif (not $distance) {
-                $sc_query = 'INSERT INTO statcast (game_id, event_num, speed) '
-                . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $speed . ')';
-                $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
-                $sth->execute();
-                $sth->finish();
-            } elsif (not $speed) {
-                $sc_query = 'INSERT INTO statcast (game_id, event_num, distance) '
-                . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $distance . ')';
-                $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
-                $sth->execute();
-                $sth->finish();
             } else {
-                $sc_query = 'INSERT INTO statcast (game_id, event_num, distance, speed) '
-                    . 'VALUES (' . $game_id . ', ' . $event_num . ', ' . $distance . ', ' . $speed . ')';
+                if (not $distance) { $distance = 'null'; }
+                if (not $speed) { $speed = 'null'; }
+                if (not $angle) { $angle = 'null'; }
+                $sc_query = 'INSERT INTO statcast (game_id, event_num, distance, speed, angle) VALUES ('
+                    . $game_id . ', ' . $event_num . ', ' . $distance . ', ' . $speed . ', ' . $angle . ')';
                 $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
                 $sth->execute();
                 $sth->finish();
