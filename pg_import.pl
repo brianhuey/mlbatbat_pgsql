@@ -162,7 +162,7 @@ sub statcast_table {
     foreach $item (@{$sc_json->{items}}) {
         if ($item->{id} = "playResult") {
             if ($item->{guid} =~ /playResult_(\d+)/) {
-                my $event_num = $1;
+                $event_num = $1;
             }
             my ($distance, $speed, $angle) = description($item->{data}->{description});
             if ((not $distance) and (not $speed) and (not $angle)) {
