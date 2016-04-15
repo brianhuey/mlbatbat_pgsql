@@ -23,11 +23,11 @@ use DBI;
 use LWP::Simple;
 use JSON qw( decode_json );
 my $server_pw = $ENV{'DB_PW'};
-$dbh = DBI->connect("DBI:Pg:database=baseball_test;host=localhost", 'power_user', $server_pw )
+$dbh = DBI->connect("DBI:Pg:database=baseball;host=localhost", 'power_user', $server_pw )
     or die $DBI::errstr;
 
 # Set base directory for XML game data download URL
-$year = '2015';
+$year = '2016';
 $basedir = "./games/year_$year";
 
 # Define XML objects
@@ -164,15 +164,16 @@ sub statcast_table {
             if ($item->{guid} =~ /playResult_(\d+)/) {
                 $event_num = $1;
             }
-            my ($distance, $speed, $angle) = description($item->{data}->{description});
-            if ((not $distance) and (not $speed) and (not $angle)) {
+            my ($distance, $speed, $angle) = description($item->{data}->{description_tracking});
+	    if ((not $distance) and (not $speed) and (not $angle)) {
                 # If no statcast data, don't submit
             } else {
                 if (not $distance) { $distance = 'null'; }
                 if (not $speed) { $speed = 'null'; }
                 if (not $angle) { $angle = 'null'; }
-                $sc_query = 'INSERT INTO statcast (game_id, event_num, distance, speed, angle) VALUES ('
-                    . $game_id . ', ' . $event_num . ', ' . $distance . ', ' . $speed . ', ' . $angle . ')';
+		$player_id = $item->{data}->{player_id};
+                $sc_query = 'INSERT INTO statcast (game_id, event_num, player_id, distance, speed, angle) VALUES ('
+                    . $game_id . ', ' . $event_num . ', ' . $player_id . ', ' . $distance . ', ' . $speed . ', ' . $angle . ')';
                 $sth = $dbh->prepare($sc_query) or die $DBI::errstr;
                 $sth->execute();
                 $sth->finish();
@@ -326,12 +327,14 @@ sub parse_at_bats_and_pitches {
     $batter_id = $atbat->{batter};
     $stand = $dbh->quote($atbat->{stand});
     $des = $dbh->quote($atbat->{des});
+    $home_team_runs = $atbats->{home_team_runs};
+    $away_team_runs = $atbats->{away_team_runs};
     $ab_id = "'" . $select_game_id . '-' . $num . "'";
     $ab_query = 'INSERT INTO atbats (ab_id, game_id, inning, num, ball, strike, outs,'
-    . ' batter, pitcher, stand, des, event, half) '
+    . ' batter, pitcher, stand, des, home_team_runs, away_team_runs, event, half) '
     . 'VALUES (' . $ab_id . ',' . "'" . $select_game_id . "'" . ', ' . $inning_num . ', ' . $num
     . ', ' . $ball . ', ' . $strike . ', ' . $out . ', ' . $batter_id . ', ' . $pitcher_id . ', ' . $stand . ', ' . $des . ', '
-    . $event . ', ' . $half . ')';
+    . $home_team_runs . ', ' . $away_team_runs . ', ' . $event . ', ' . $half . ')';
     $sth= $dbh->prepare($ab_query) or die $DBI::errstr;
     $sth->execute();
     $sth->finish();

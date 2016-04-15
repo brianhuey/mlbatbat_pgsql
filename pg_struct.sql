@@ -34,6 +34,8 @@ CREATE TABLE IF NOT EXISTS atbats (
   hit_type varchar(1) DEFAULT NULL,
   bbtype varchar(2) DEFAULT NULL,
   play_result smallint DEFAULT NULL,
+  home_team_runs smallint DEFAULT NULL,
+  away_team_runs smallint DEFAULT NULL,
   /*
   pitcher_seq integer DEFAULT NULL,
   pitcher_ab_seq integer DEFAULT NULL,

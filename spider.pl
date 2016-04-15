@@ -56,14 +56,14 @@ sub getWithRetry($) {
 
 # get all important files from MLB.com, 4/2/07 through yesterday
 # 0,0,0,day,month-1,1900+year
-$start = timelocal(0,0,0,7,5,115);
+$start = timelocal(0,0,0,3,3,116);
 ($mon, $mday, $year) = extractDate($start);
 print "starting at $mon/$mday/$year\n";
 
 ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
 #$now = timelocal(0,0,0,$mday - 0,$mon,$year);
-#$now = timelocal(0,0,0,$mday - 1,$mon,$year);
-$now = timelocal(0,0,0,8,5,115);
+$now = timelocal(0,0,0,$mday - 1,$mon,$year);
+#$now = timelocal(0,0,0,8,5,115);
 ($mon, $mday, $year) = extractDate($now);
 print "ending at $mon/$mday/$year\n";
 
