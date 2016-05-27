@@ -26,9 +26,6 @@ my $server_pw = $ENV{'DB_PW'};
 $dbh = DBI->connect("DBI:Pg:database=baseball;host=localhost", 'power_user', $server_pw )
     or die $DBI::errstr;
 
-# Set base directory for XML game data download URL
-$year = '2016';
-$basedir = "/year_2016/month_05/day_25";
 
 # Define XML objects
 use XML::Simple;
@@ -532,34 +529,31 @@ sub hitrecord {
 sub process_directory {
     ($basedir, $dbh) = @_;
     # Get the list of months from the base year directory
-    if ($basedir =~ m/\/(year_[2][0][12][0-9])\/(month_[0][1-9]|month_[1][012])\/(day_[0][1-9]|day_[12][0-9]|day_[3][01])$/) {
-       $yeardir = $1;
-       $mondir = $2;
-       $daydir = $3;
-       opendir GDIR, "./games/$yeardir/$mondir/$daydir";
+    if ($basedir =~ m/\/(.+)\/(year_[2][0][12][0-9])\/(month_[0][1-9]|month_[1][012])\/(day_[0][1-9]|day_[12][0-9]|day_[3][01])/) {
+       $rootdir = $1;
+       $yeardir = $2;
+       $mondir = $3;
+       $daydir = $4;
+       print "processing day...";
+       opendir GDIR, "./$rootdir/$yeardir/$mondir/$daydir";
        my @gamedirs = readdir GDIR;
        closedir GDIR;
        foreach $gamedir (@gamedirs) {
-       if ($gamedir =~ /gid_/ and (-e "./games/$yeardir/$mondir/$daydir/$gamedir/inning/inning_hit.xml")) {
-		my $fulldir = "./games/$yeardir/$mondir/$daydir/$gamedir";
+       if ($gamedir =~ /gid_/ and (-e "./$rootdir/$yeardir/$mondir/$daydir/$gamedir/inning/inning_hit.xml")) {
+		my $fulldir = "./$rootdir/$yeardir/$mondir/$daydir/$gamedir";
                 ($home, $away, $game_id, $game_date, $game_number) = games_table($fulldir, $dbh);
                 print $game_id;
-		print "Importing players table...";
                 players_table($fulldir, $dbh);
-		print "Importing statcast table...";
                 statcast_table($fulldir, $dbh, $game_id);
-		print "Importing check_gameid...";
                 check_gameid($fulldir, $dbh, $home, $away, $game_id, $game_date, $game_number);
-		print "Importing umpires_table...";
                 umpires_table($fulldir, $dbh);
-		print "Importing atbats_pitches_table...";
                 atbats_pitches_table($fulldir, $dbh, $game_id);
-		print "Importing hitrecord...";
                 hitrecord($fulldir, $dbh, $game_id);
                 }
         }
     }
     else {	
+    print "processing year...";
     opendir MDIR, $basedir;
     my @monthdirs = readdir MDIR;
     closedir MDIR;
@@ -577,7 +571,7 @@ sub process_directory {
                         if ($gamedir =~ /gid_/ and (-e "$basedir/$mondir/$daydir/$gamedir/inning/inning_hit.xml")) {
                             my $fulldir = "$basedir/$mondir/$daydir/$gamedir";
                             ($home, $away, $game_id, $game_date, $game_number) = games_table($fulldir, $dbh);
-                            print $game_id;
+                            #print $game_id;
                             players_table($fulldir, $dbh);
                             statcast_table($fulldir, $dbh, $game_id);
                             check_gameid($fulldir, $dbh, $home, $away, $game_id, $game_date, $game_number);
@@ -603,4 +597,20 @@ sub process_directory {
 #           print OUTFILE Dumper(@innings);
 #           close OUTFILE;
 
-process_directory($basedir, $dbh);
+# Get stdin
+if (-d $ARGV[1]) {
+	if ($ARGV[0] = "-d") {
+		$basedir = "./games/year_2016/month_05/day_23";
+		print "$basedir\n";
+		print "$ARGV[1]\n";
+		process_directory($basedir, $dbh);
+	} elsif ($ARGV[0] = "-y") {
+		$basedir = $ARGV[1];
+		process_directory($basedir, $dbh);
+	} else {
+		die "incorrect flags:\n -d <day path>\n -y <year path>\n"; 
+	}
+} else {
+	die "path not specified/doesn't exist.\n ./pg_import.pl -d <day path> -y <year path>\n";
+}	  
+#process_directory($basedir, $dbh);
