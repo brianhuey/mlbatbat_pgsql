@@ -534,7 +534,6 @@ sub process_directory {
        $yeardir = $2;
        $mondir = $3;
        $daydir = $4;
-       print "processing day...";
        opendir GDIR, "./$rootdir/$yeardir/$mondir/$daydir";
        my @gamedirs = readdir GDIR;
        closedir GDIR;
@@ -553,7 +552,6 @@ sub process_directory {
         }
     }
     else {	
-    print "processing year...";
     opendir MDIR, $basedir;
     my @monthdirs = readdir MDIR;
     closedir MDIR;
@@ -597,7 +595,7 @@ sub process_directory {
 #           print OUTFILE Dumper(@innings);
 #           close OUTFILE;
 
-# Get stdin
+# Command line parameters
 if (-d $ARGV[1]) {
 	if ($ARGV[0] = "-d") {
 		$basedir = "./games/year_2016/month_05/day_23";
@@ -613,4 +611,3 @@ if (-d $ARGV[1]) {
 } else {
 	die "path not specified/doesn't exist.\n ./pg_import.pl -d <day path> -y <year path>\n";
 }	  
-#process_directory($basedir, $dbh);
