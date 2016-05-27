@@ -10,11 +10,16 @@ Table structures for database
 
 ### spider.pl
 Scrape MLB AtBat and Statcast files
-
+Use:
+./spider.pl DD-MM-YYYY
+Where DD-MM-YYYY is the begin date, the current date is the end date.
 ### pg_import.pl
+Parse files and import it in to database
 Dependencies: DBI, LWP, JSON, XML
-
-Parse files and import in to database
+Use:
+./pg_import.pl -d day_dir -y year_dir
+Where day_dir is a directory that contains individual game dirs (directories beginning with gid_)
+year_dir is a directory that contains months and day directories.
 
 ### drop_tables.sql
 Drop all tables that pg_struct.sql created.
