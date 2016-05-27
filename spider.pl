@@ -53,10 +53,21 @@ sub getWithRetry($) {
     }
     return ($response);
 }
-
+# Evaluate stdin start date, if valid, use as start, otherwise end
+$input = $ARGV[0];
+$start = "";
+if ($input =~ m/^(0?[1-9]|[12][0-9]|3[01])[\/\-](0?[1-9]|1[012])[\/\-]([2][0][01][1-9])$/){
+	$dd = $1 + 0;
+	$mm = $2 - 1;
+	$yyyy = $3 - 1900;
+	$start = timelocal(0,0,0,$dd,$mm,$yyyy);
+}
+else {
+	print "Invalid date\n" and die;
+}
 # get all important files from MLB.com, 4/2/07 through yesterday
 # 0,0,0,day,month-1,1900+year
-$start = timelocal(0,0,0,3,3,116);
+# $start = timelocal(0,0,0,3,3,116);
 ($mon, $mday, $year) = extractDate($start);
 print "starting at $mon/$mday/$year\n";
 

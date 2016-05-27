@@ -28,15 +28,10 @@ $dbh = DBI->connect("DBI:Pg:database=baseball;host=localhost", 'power_user', $se
 
 # Set base directory for XML game data download URL
 $year = '2016';
-$basedir = "./games/year_$year";
+$basedir = "/year_2016/month_05/day_25";
 
 # Define XML objects
 use XML::Simple;
-
-
-
-
-
 
 sub extract_date($) {
     my($in) = @_;
@@ -327,14 +322,14 @@ sub parse_at_bats_and_pitches {
     $batter_id = $atbat->{batter};
     $stand = $dbh->quote($atbat->{stand});
     $des = $dbh->quote($atbat->{des});
-    $home_team_runs = $atbats->{home_team_runs};
-    $away_team_runs = $atbats->{away_team_runs};
+    $home_team_runs = $atbat->{home_team_runs};
+    $away_team_runs = $atbat->{away_team_runs};
     $ab_id = "'" . $select_game_id . '-' . $num . "'";
     $ab_query = 'INSERT INTO atbats (ab_id, game_id, inning, num, ball, strike, outs,'
     . ' batter, pitcher, stand, des, home_team_runs, away_team_runs, event, half) '
     . 'VALUES (' . $ab_id . ',' . "'" . $select_game_id . "'" . ', ' . $inning_num . ', ' . $num
-    . ', ' . $ball . ', ' . $strike . ', ' . $out . ', ' . $batter_id . ', ' . $pitcher_id . ', ' . $stand . ', ' . $des . ', '
-    . $home_team_runs . ', ' . $away_team_runs . ', ' . $event . ', ' . $half . ')';
+    . ', ' . $ball . ', ' . $strike . ', ' . $out . ', ' . $batter_id . ', ' . $pitcher_id . ', ' . $stand . ', ' . $des
+    . ', ' . $home_team_runs . ', ' . $away_team_runs . ', ' . $event . ', ' . $half . ')';
     $sth= $dbh->prepare($ab_query) or die $DBI::errstr;
     $sth->execute();
     $sth->finish();
@@ -537,6 +532,34 @@ sub hitrecord {
 sub process_directory {
     ($basedir, $dbh) = @_;
     # Get the list of months from the base year directory
+    if ($basedir =~ m/\/(year_[2][0][12][0-9])\/(month_[0][1-9]|month_[1][012])\/(day_[0][1-9]|day_[12][0-9]|day_[3][01])$/) {
+       $yeardir = $1;
+       $mondir = $2;
+       $daydir = $3;
+       opendir GDIR, "./games/$yeardir/$mondir/$daydir";
+       my @gamedirs = readdir GDIR;
+       closedir GDIR;
+       foreach $gamedir (@gamedirs) {
+       if ($gamedir =~ /gid_/ and (-e "./games/$yeardir/$mondir/$daydir/$gamedir/inning/inning_hit.xml")) {
+		my $fulldir = "./games/$yeardir/$mondir/$daydir/$gamedir";
+                ($home, $away, $game_id, $game_date, $game_number) = games_table($fulldir, $dbh);
+                print $game_id;
+		print "Importing players table...";
+                players_table($fulldir, $dbh);
+		print "Importing statcast table...";
+                statcast_table($fulldir, $dbh, $game_id);
+		print "Importing check_gameid...";
+                check_gameid($fulldir, $dbh, $home, $away, $game_id, $game_date, $game_number);
+		print "Importing umpires_table...";
+                umpires_table($fulldir, $dbh);
+		print "Importing atbats_pitches_table...";
+                atbats_pitches_table($fulldir, $dbh, $game_id);
+		print "Importing hitrecord...";
+                hitrecord($fulldir, $dbh, $game_id);
+                }
+        }
+    }
+    else {	
     opendir MDIR, $basedir;
     my @monthdirs = readdir MDIR;
     closedir MDIR;
@@ -568,7 +591,7 @@ sub process_directory {
         }
     }
 }
-
+}
 # This is a debug section if you want to look at contents of the XML file
 # in an easier-to-read format
 #           use Data::Dumper;
