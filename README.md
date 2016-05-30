@@ -29,3 +29,12 @@ year_dir is a directory that contains months and day directories.
 
 ### drop_tables.sql
 Drop all tables that pg_struct.sql created.
+
+### cron
+Crontab file to update database with yesterday's scores. Runs scrape_and_import.sh every day from April-October at 5am.
+
+Use:
+
+crontab cron
+
+
