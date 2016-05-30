@@ -13,9 +13,10 @@ Scrape MLB AtBat and Statcast files
 
 Use:
 
-./spider.pl DD-MM-YYYY
+./spider.pl DD/MM/YYYY
 
-Where DD-MM-YYYY is the begin date, the current date is the end date.
+Where DD/MM/YYYY is the begin date, the current date is the end date.
+
 ### pg_import.pl
 Parse files and import it in to database
 Dependencies: DBI, LWP, JSON, XML
@@ -25,7 +26,7 @@ Use:
 ./pg_import.pl -d day_dir -y year_dir
 
 Where day_dir is a directory that contains individual game dirs (directories beginning with gid_)
-year_dir is a directory that contains months and day directories.
+year_dir is a directory that contains months and day directories. Ideally if you are just starting your database, and you've just scraped a large number of games, you will want to use the -y flag and do a bulk import. After that, you will want to use the -d flag to import a single day's worth of games. Alternatively, you can use the crontab script described below to automatically import games on a daily basis.
 
 ### drop_tables.sql
 Drop all tables that pg_struct.sql created.
