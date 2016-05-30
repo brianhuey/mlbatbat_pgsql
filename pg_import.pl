@@ -598,9 +598,8 @@ sub process_directory {
 # Command line parameters
 if (-d $ARGV[1]) {
 	if ($ARGV[0] = "-d") {
-		$basedir = "./games/year_2016/month_05/day_23";
+		$basedir = $ARGV[1];
 		print "$basedir\n";
-		print "$ARGV[1]\n";
 		process_directory($basedir, $dbh);
 	} elsif ($ARGV[0] = "-y") {
 		$basedir = $ARGV[1];
