@@ -1,1 +1,1 @@
-00 05 * 4-10 * ./scrape_and_import.sh
+00 05 * 4-10 * /home/ec2-user/mlbatbat_pgsql/scrape_and_import.sh

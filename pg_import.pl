@@ -375,7 +375,7 @@ sub parse_at_bats_and_pitches {
             $sv_id = $dbh->quote($pitch->{sv_id});
             $pitch_type = $dbh->quote($pitch->{pitch_type});
             $type_confidence = $pitch->{type_confidence};
-            $nasty = $pitch->{nasty};
+            $nasty = $dbh->quote($pitch->{nasty});
             $cc = $dbh->quote($pitch->{cc});
             # New fields
             $spin_dir = $pitch->{spin_dir};

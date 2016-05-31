@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS game_types (
 );
 
 CREATE TABLE IF NOT EXISTS pitches (
-  pitch_id char(30) PRIMARY KEY,
+  pitch_id char(31) PRIMARY KEY,
   ab_id char(30) NOT NULL,
   des varchar(30) NOT NULL,
   type varchar(1) NOT NULL,

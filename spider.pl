@@ -73,7 +73,7 @@ print "starting at $mon/$mday/$year\n";
 
 ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
 #$now = timelocal(0,0,0,$mday - 0,$mon,$year);
-$now = timelocal(0,0,0,$mday - 1,$mon,$year);
+$now = timelocal(0,0,0,$mday,$mon,$year);
 #$now = timelocal(0,0,0,8,5,115);
 ($mon, $mday, $year) = extractDate($now);
 print "ending at $mon/$mday/$year\n";
