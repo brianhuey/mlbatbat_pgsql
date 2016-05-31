@@ -33,6 +33,7 @@ Drop all tables that pg_struct.sql created.
 
 ### cron
 Crontab file to update database with yesterday's scores. Runs scrape_and_import.sh every day from April-October at 5am.
+You may need to edit cron to specify the actual path of scrape_and_import.sh
 
 Use:
 
