@@ -529,17 +529,17 @@ sub hitrecord {
 sub process_directory {
     ($basedir, $dbh) = @_;
     # Get the list of months from the base year directory
-    if ($basedir =~ m/\/(.+)\/(year_[2][0][12][0-9])\/(month_[0][1-9]|month_[1][012])\/(day_[0][1-9]|day_[12][0-9]|day_[3][01])/) {
+    if ($basedir =~ m/^(.+)\/(year_[2][0][12][0-9])\/(month_[0][1-9]|month_[1][012])\/(day_[0][1-9]|day_[12][0-9]|day_[3][01])/) {
        $rootdir = $1;
        $yeardir = $2;
        $mondir = $3;
        $daydir = $4;
-       opendir GDIR, "./$rootdir/$yeardir/$mondir/$daydir";
+       opendir GDIR, "$rootdir/$yeardir/$mondir/$daydir";
        my @gamedirs = readdir GDIR;
        closedir GDIR;
        foreach $gamedir (@gamedirs) {
-       if ($gamedir =~ /gid_/ and (-e "./$rootdir/$yeardir/$mondir/$daydir/$gamedir/inning/inning_hit.xml")) {
-		my $fulldir = "./$rootdir/$yeardir/$mondir/$daydir/$gamedir";
+       if ($gamedir =~ /gid_/ and (-e "$rootdir/$yeardir/$mondir/$daydir/$gamedir/inning/inning_hit.xml")) {
+		my $fulldir = "$rootdir/$yeardir/$mondir/$daydir/$gamedir";
                 ($home, $away, $game_id, $game_date, $game_number) = games_table($fulldir, $dbh);
                 print $game_id;
                 players_table($fulldir, $dbh);

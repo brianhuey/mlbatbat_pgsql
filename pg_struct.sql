@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS atbats (
 );
 
 CREATE TABLE IF NOT EXISTS actions (
-  ac_id char(30) PRIMARY KEY,
+  ac_id char(31) PRIMARY KEY,
   game_id char(26) NOT NULL,
   inning smallint NOT NULL,
   half smallint DEFAULT '0',
@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS actions (
 );
 
 CREATE TABLE IF NOT EXISTS runners (
-  run_id char(37) PRIMARY KEY,
+  run_id char(38) PRIMARY KEY,
   game_id char(26) NOT NULL,
   inning smallint NOT NULL,
   half smallint DEFAULT '0',
